@@ -8,14 +8,14 @@ export class AuthController {
   ) {}
 
   @Get('register_phone')
-  registerPhone() {
+  async registerPhone() {
     this.authService.registerPhone();
-    return { ok: true };
+    return [];
   }
 
   @Get('confirm_phone')
   confirmPhone() {
     this.authService.confirmPhone();
-    return { ok: true };
+    return {};
   }
 }
