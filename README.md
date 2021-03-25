@@ -1,2 +1,2 @@
 # TikTok-duplicate
-A backend of the popular resource (NestJS + Sequelize)
+A backend of the popular resource (NestJS + TypeORM)
