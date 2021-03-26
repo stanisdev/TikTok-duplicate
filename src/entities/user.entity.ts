@@ -1,8 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { IsDate, IsInt, IsMobilePhone, IsUUID, Length, Max, MaxLength, Min, MinLength } from 'class-validator';
 
-@Entity('user')
-export class UserEntity {
+@Entity('users')
+export class User {
   @PrimaryGeneratedColumn('uuid')
   @IsUUID(4)
   id: string;
@@ -32,5 +32,5 @@ export class UserEntity {
 
   @Column()
   @IsDate()
-  createdAt: Date;
+  created_at: Date;
 }

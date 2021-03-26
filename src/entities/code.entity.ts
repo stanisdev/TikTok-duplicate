@@ -1,14 +1,14 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { IsDate, MaxLength, IsUUID } from 'class-validator';
 
-@Entity('code')
-export class CodeEntity {
+@Entity('codes')
+export class Code {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   @IsUUID(4)
-  userId: string;
+  user_id: string;
 
   @Column()
   @MaxLength(40)
@@ -16,5 +16,5 @@ export class CodeEntity {
 
   @Column()
   @IsDate()
-  expireAt: Date;
+  expire_at: Date;
 }

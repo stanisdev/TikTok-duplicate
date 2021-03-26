@@ -1,4 +1,5 @@
-import { Controller, Get } from "@nestjs/common";
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { RegisterPhoneDto } from "./auth.dto";
 import { AuthService } from "./auth.service";
 
 @Controller('auth')
@@ -7,10 +8,11 @@ export class AuthController {
     private authService: AuthService,
   ) {}
 
-  @Get('register_phone')
-  async registerPhone() {
-    this.authService.registerPhone();
-    return [];
+  @Post('register_phone')
+  async registerPhone(
+    @Body() { phone }: RegisterPhoneDto
+  ) {
+    return this.authService.registerPhoneNumber(phone);
   }
 
   @Get('confirm_phone')
