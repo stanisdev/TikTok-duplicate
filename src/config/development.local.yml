@@ -1,0 +1,15 @@
+db:
+  type: 'postgres'
+  host: 'localhost'
+  port: 5432
+  username: 'y4cb'
+  password: 'sKJt9KGxCSqRAWeC'
+  database: 'tiktok'
+  autoLoadEntities: true
+  synchronize: false
+  logger: 'simple-console'
+  logging: true
+  entities: ['dist/**/*.entity{.ts,.js}']
+
+auth:
+  smsCodeExpiration: '1 hours'

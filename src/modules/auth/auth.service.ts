@@ -4,6 +4,7 @@ import { User } from "src/entities/user.entity";
 import { Code } from 'src/entities/code.entity';
 import { Repository, getConnection, Connection } from "typeorm";
 import { customAlphabet, nanoid } from 'nanoid/async'
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
@@ -12,12 +13,14 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private configService: ConfigService
   ) {}
 
   /**
    * Register the given phone number
    */
   async registerPhoneNumber(phone: string) {
+    // console.log(this.configService.get<string>('auth.smsCodeExpiration'));
     if (!await this.shouldRegisterPhone(phone)) {
       return {
         // @todo: move to i18n
