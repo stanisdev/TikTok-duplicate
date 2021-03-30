@@ -16,10 +16,10 @@ export class AuthController {
   }
 
   @Post('confirm_phone')
-  confirmPhone(
+  async confirmPhone(
     @Body() { code }: ConfirmPhoneDto
   ) {
-    this.authService.confirmPhone(code);
-    return {};
+    const userId = await this.authService.confirmPhone(code);
+    return { userId };
   }
 }

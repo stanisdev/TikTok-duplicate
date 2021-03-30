@@ -63,4 +63,23 @@ export class AuthRepository {
       .where('userId = :userId', { userId: user.id })
       .execute();
   }
+
+  findUserBySmsCode(code: string): Promise<Code> {
+    return this.codeRepository
+      .createQueryBuilder('codeTable')
+      .innerJoinAndSelect('codeTable.user', 'user')
+      .select([
+        'codeTable.id',
+        'codeTable.expireAt',
+        'user.id',
+        'user.status'
+      ])
+      .where('codeTable.code = :code',  { code })
+      .getOne();
+  }
+
+  async updateUserStatus(user: User, status: number): Promise<void> {
+    user.status = status;
+    await this.userRepository.save(user);
+  }
 }

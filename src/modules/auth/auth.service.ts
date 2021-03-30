@@ -3,6 +3,7 @@ import { customAlphabet } from 'nanoid/async'
 import { ConfigService } from "@nestjs/config";
 import { AuthRepository } from "./auth.repository";
 import { SmsCodeLifetime } from './auth.interface';
+import { Code } from '../../entities/code.entity';
 
 @Injectable()
 export class AuthService {
@@ -76,7 +77,30 @@ export class AuthService {
     }
   }
 
-  async confirmPhone(code: string) {}
+  /**
+   * Confirm a user's phone number by 
+   * the code from sms
+   */
+  async confirmPhone(code: string): Promise<string> {
+    const record = await this.authRepository.findUserBySmsCode(code);
+    if (
+      record?.user?.status != 0 ||
+      Date.now() > new Date(record.expireAt).getTime()
+    ) {
+      throw new BadRequestException(
+        'The confirmation code is incorrect'
+      );
+    }
+    /**
+     * If checking passed successfully
+     */
+    await Promise.all([
+      this.authRepository.removeAllSmsCodes(record.user),
+      // @todo: "1" get from an interface
+      this.authRepository.updateUserStatus(record.user, 1),
+    ]);
+    return record.user.id;
+  }
 
   private generateCode(): Promise<string> {
     // @todo: 5 - move to config
