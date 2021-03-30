@@ -15,6 +15,7 @@ import configuration from '../../config/configuration';
     ),
     ConfigModule.forRoot({
       load: [configuration],
+      isGlobal: true,
     }),
   ],
   controllers: [AppController],

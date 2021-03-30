@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IsDate, IsInt, IsMobilePhone, IsUUID, Length, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { Code } from './code.entity';
 
 @Entity('users')
 export class User {
@@ -30,7 +31,10 @@ export class User {
   @Max(10)
   status: number;
 
+  @OneToMany(() => Code, code => code.user)
+  codes: Code[];
+
   @Column()
   @IsDate()
-  created_at: Date;
+  createdAt: Date;
 }

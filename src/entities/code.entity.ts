@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsDate, MaxLength, IsUUID } from 'class-validator';
+import { User } from './user.entity';
 
 @Entity('codes')
 export class Code {
@@ -7,14 +8,13 @@ export class Code {
   id: number;
 
   @Column()
-  @IsUUID(4)
-  user_id: string;
-
-  @Column()
   @MaxLength(40)
   code: string;
 
+  @ManyToOne(() => User, user => user.codes)
+  user: User;
+
   @Column()
   @IsDate()
-  expire_at: Date;
+  expireAt: Date;
 }

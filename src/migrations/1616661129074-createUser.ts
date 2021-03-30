@@ -14,7 +14,7 @@ export class createUser1616661129074 implements MigrationInterface {
         password char(60) NOT NULL,
         salt char(5) NOT NULL,
         status smallint DEFAULT 0,
-        created_at timestamp DEFAULT current_timestamp
+        "createdAt" timestamp DEFAULT current_timestamp
       );
     `);
   }

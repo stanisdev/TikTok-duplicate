@@ -1,26 +1,30 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "src/entities/user.entity";
-import { Code } from 'src/entities/code.entity';
-import { Repository, getConnection, Connection } from "typeorm";
-import { customAlphabet, nanoid } from 'nanoid/async'
+import { customAlphabet } from 'nanoid/async'
 import { ConfigService } from "@nestjs/config";
+import { AuthRepository } from "./auth.repository";
+import { SmsCodeLifetime } from './auth.interface';
 
 @Injectable()
 export class AuthService {
-  private db: Connection = getConnection();
+  private smsCodeLifetime: SmsCodeLifetime;
 
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private configService: ConfigService
-  ) {}
+    private configService: ConfigService,
+    private authRepository: AuthRepository
+  ) {
+    const [count, unit] = this.configService
+      .get<string>('auth.smsCodeLifetime')
+      .split(' ');
+    this.smsCodeLifetime = {
+      amount: Number.parseInt(count),
+      unit
+    };
+  }
 
   /**
    * Register the given phone number
    */
   async registerPhoneNumber(phone: string) {
-    // console.log(this.configService.get<string>('auth.smsCodeExpiration'));
     if (!await this.shouldRegisterPhone(phone)) {
       return {
         // @todo: move to i18n
@@ -38,33 +42,9 @@ export class AuthService {
    * and exact phone
    */
   private async createInitialUser(phone: string): Promise<void> {
-    const queryBuilder = this.db.createQueryBuilder();
-
-    // @todo: use transaction
-    const { raw: [user] } = await queryBuilder
-      .insert()
-      .into(User)
-      .values({
-        phone,
-        username: await nanoid(40),
-        password: '',
-        salt: '',
-        status: 0,
-      })
-      .execute();
-
+    const user = await this.authRepository.createInitialUser(phone);
     const code = await this.generateCode();
-    await queryBuilder
-      .insert()
-      .into(Code)
-      .values({
-        code,
-        user_id: user.id,
-        // @todo: get expiration period from
-        // a config module
-        expire_at: new Date(),
-      })
-      .execute();
+    await this.authRepository.createSmsCode(user, code, this.smsCodeLifetime);
 
     this.sendCodeViaSms(code);
   }
@@ -74,43 +54,18 @@ export class AuthService {
    * or should we just send a new confirm code
    */
   private async shouldRegisterPhone(phone: string): Promise<boolean> {
-    const queryBuilder = this.db.createQueryBuilder();
-
-    const user = await queryBuilder
-      .select(['id', 'status'])
-      .from(User, 'user')
-      .where('user.phone = :phone', { phone })
-      .getRawOne<User>();
-
+    const user = await this.authRepository.findUserByPhone(phone);
     if (!(user instanceof Object)) {
       return true;
     }
-    /**
-     * Resend a new confirm code
-     */
     if (user.status == 0) {
-      const code = await this.generateCode();
       /**
        * Remove the previously created code
        */
-      await queryBuilder
-        .delete()
-        .from(Code)
-        .where('user_id = :userId', { userId: user.id })
-        .execute();
-      /**
-       * Create a new one
-       */
-      await queryBuilder
-        .insert()
-        .into(Code)
-        .values({
-          user_id: user.id,
-          code,
-          expire_at: new Date(),
-        })
-        .execute();
+      await this.authRepository.removeAllSmsCodes(user);
       
+      const code = await this.generateCode();
+      await this.authRepository.createSmsCode(user, code, this.smsCodeLifetime);
       this.sendCodeViaSms(code);
       return false;
     }
@@ -121,9 +76,10 @@ export class AuthService {
     }
   }
 
-  confirmPhone() {}
+  async confirmPhone(code: string) {}
 
   private generateCode(): Promise<string> {
+    // @todo: 5 - move to config
     return customAlphabet('1234567890', 5)();
   }
 

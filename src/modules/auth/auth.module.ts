@@ -4,17 +4,16 @@ import { User } from 'src/entities/user.entity';
 import { Code } from 'src/entities/code.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ConfigModule } from '@nestjs/config';
-import configuration from '../../config/configuration';
+import { AuthRepository } from './auth.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Code]),
-    ConfigModule.forRoot({
-      load: [configuration]
-    }),
+    TypeOrmModule.forFeature([User, Code])
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [
+    AuthService,
+    AuthRepository,
+  ],
 })
 export class AuthModule {}
