@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { customAlphabet } from 'nanoid/async'
+import { customAlphabet, nanoid } from 'nanoid/async'
 import { ConfigService } from "@nestjs/config";
 import { AuthRepository } from "./auth.repository";
 import { SmsCodeLifetime } from './auth.interface';
-import { Code } from '../../entities/code.entity';
+import { CompleteRegistrationDto } from "./auth.dto";
+import { UtilsService } from "src/providers/utils.service";
 
 @Injectable()
 export class AuthService {
@@ -45,6 +46,8 @@ export class AuthService {
   private async createInitialUser(phone: string): Promise<void> {
     const user = await this.authRepository.createInitialUser(phone);
     const code = await this.generateCode();
+
+    // @todo: define type of codes in db schema
     await this.authRepository.createSmsCode(user, code, this.smsCodeLifetime);
 
     this.sendCodeViaSms(code);
@@ -96,10 +99,38 @@ export class AuthService {
      */
     await Promise.all([
       this.authRepository.removeAllSmsCodes(record.user),
-      // @todo: "1" get from an interface
+      // @todo: "1" define and get from an interface
       this.authRepository.updateUserStatus(record.user, 1),
     ]);
     return record.user.id;
+  }
+
+  /**
+   * Complete the started process of registration
+   * by setting username, password to a user who
+   * confirmed his phone before
+   */
+  async completeRegistration(
+    { username, password, userId }: CompleteRegistrationDto
+  ): Promise<void> {
+    const user = await this.authRepository.userRepository.findOne(userId);
+    if (user?.status != 1) { // @todo: "1" get from an interface
+      throw new BadRequestException(
+        'User is not found'
+      );
+    }
+    if (await this.authRepository.doesUsernameExist(username)) {
+      throw new BadRequestException(
+        'Please, specify another username'
+      );
+    }
+    user.username = username;
+    user.salt = await nanoid(5);
+    user.status = 2; // @todo: "2" get from an interface
+    
+    const hash = await UtilsService.generateHash(password + user.salt);
+    user.password = hash;
+    await this.authRepository.userRepository.save(user);
   }
 
   private generateCode(): Promise<string> {

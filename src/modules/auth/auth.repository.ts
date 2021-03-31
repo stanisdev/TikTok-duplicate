@@ -11,7 +11,7 @@ import * as moment from 'moment';
 export class AuthRepository {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    public userRepository: Repository<User>,
 
     @InjectRepository(Code)
     private codeRepository: Repository<Code>,
@@ -81,5 +81,15 @@ export class AuthRepository {
   async updateUserStatus(user: User, status: number): Promise<void> {
     user.status = status;
     await this.userRepository.save(user);
+  }
+
+  async doesUsernameExist(username: string): Promise<boolean> {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .select('id')
+      .where('user.username = :username', { username })
+      .getRawOne<User>();
+    
+      return user instanceof Object;
   }
 }
