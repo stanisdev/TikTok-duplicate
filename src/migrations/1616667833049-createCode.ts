@@ -5,7 +5,7 @@ export class createCode1616667833049 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE SEQUENCE codes_id_seq;
+      CREATE SEQUENCE IF NOT EXISTS codes_id_seq;
 
       CREATE TABLE codes (
         id integer PRIMARY KEY DEFAULT nextval('codes_id_seq'),

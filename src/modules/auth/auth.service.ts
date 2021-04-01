@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { AuthRepository } from "./auth.repository";
 import { SmsCodeLifetime } from './auth.interface';
 import { CompleteRegistrationDto } from "./auth.dto";
-import { UtilsService } from "src/providers/utils.service";
+import { UtilsService } from "../../../src/providers/utils.service";
 
 @Injectable()
 export class AuthService {

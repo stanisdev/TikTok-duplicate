@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { SmsCodeLifetime } from './auth.interface';
-import { User } from "src/entities/user.entity";
-import { Code } from 'src/entities/code.entity';
+import { User } from '../../../src/entities/user.entity';
+import { Code } from '../../../src/entities/code.entity';
 import { nanoid } from 'nanoid/async'
 import * as moment from 'moment';
 

@@ -2,13 +2,12 @@ db:
   type: 'postgres'
   host: 'localhost'
   port: 5432
-  username: 'y4cb'
-  password: 'sKJt9KGxCSqRAWeC'
-  database: 'tiktok'
+  username: 'ti89o1'
+  password: '69kPMcAkHu7fD'
+  database: 'tiktok_test'
   autoLoadEntities: true
   synchronize: false
-  logger: 'simple-console'
-  logging: true
+  logging: false
   entities: ['dist/**/*.entity{.ts,.js}']
   keepConnectionAlive: true
 
