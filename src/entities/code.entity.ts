@@ -1,10 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import {
-  IsDate,
-  MaxLength,
-  IsNumber,
-  IsPositive,
-} from 'class-validator';
+import { IsDate, MaxLength, IsNumber, IsPositive } from 'class-validator';
 import { User } from './user.entity';
 
 export enum CodeType {

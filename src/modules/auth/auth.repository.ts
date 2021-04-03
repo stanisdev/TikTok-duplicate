@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CodeLifetime } from './auth.interface';
-import { User } from '../../../src/entities/user.entity';
+import { User, UserStatus } from '../../../src/entities/user.entity';
 import { Code } from '../../../src/entities/code.entity';
 import { nanoid } from 'nanoid/async';
 import * as moment from 'moment';
@@ -23,7 +23,7 @@ export class AuthRepository {
     user.username = await nanoid(40);
     user.password = '';
     user.salt = '';
-    user.status = 0;
+    user.status = UserStatus.INITIAL;
 
     await this.userRepository.save(user);
     return user;
@@ -70,11 +70,6 @@ export class AuthRepository {
       .select(['codeTable.id', 'codeTable.expireAt', 'user.id', 'user.status'])
       .where('codeTable.code = :code', { code })
       .getOne();
-  }
-
-  async updateUserStatus(user: User, status: number): Promise<void> {
-    user.status = status;
-    await this.userRepository.save(user);
   }
 
   async doesUsernameExist(username: string): Promise<boolean> {

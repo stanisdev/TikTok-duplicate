@@ -6,7 +6,7 @@ import { AuthTokens, CodeLifetime } from './auth.interface';
 import { CompleteRegistrationDto, SignInDto } from './auth.dto';
 import { UtilsService } from '../../../src/providers/utils.service';
 import { CodeType } from '../../entities/code.entity';
-import { User } from '../../entities/user.entity';
+import { User, UserStatus } from '../../entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -68,7 +68,7 @@ export class AuthService {
     if (!(user instanceof Object)) {
       return true;
     }
-    if (user.status == 0) {
+    if (user.status == UserStatus.INITIAL) {
       /**
        * Remove the previously created code
        */
@@ -95,7 +95,7 @@ export class AuthService {
   async confirmPhone(code: string): Promise<string> {
     const record = await this.authRepository.findUserBySmsCode(code);
     if (
-      record?.user?.status != 0 ||
+      record?.user?.status != UserStatus.INITIAL ||
       Date.now() > new Date(record.expireAt).getTime()
     ) {
       throw new BadRequestException('The confirmation code is incorrect');
@@ -103,12 +103,12 @@ export class AuthService {
     /**
      * If checking passed successfully
      */
-    await Promise.all([
-      this.authRepository.removeAllSmsCodes(record.user),
-      // @todo: "1" define and get from an interface
-      this.authRepository.updateUserStatus(record.user, 1),
-    ]);
-    return record.user.id;
+    const { user } = record;
+    user.status = UserStatus.PHONE_CONFIRMED;
+
+    await this.authRepository.removeAllSmsCodes(user);
+    await this.authRepository.userRepository.save(user);
+    return user.id;
   }
 
   /**
@@ -122,8 +122,8 @@ export class AuthService {
     userId,
   }: CompleteRegistrationDto): Promise<void> {
     const user = await this.authRepository.userRepository.findOne(userId);
-    if (user?.status != 1) {
-      // @todo: "1" get from an interface
+
+    if (user?.status != UserStatus.PHONE_CONFIRMED) {
       throw new BadRequestException('User is not found');
     }
     if (await this.authRepository.doesUsernameExist(username)) {
@@ -131,7 +131,7 @@ export class AuthService {
     }
     user.username = username;
     user.salt = await nanoid(5);
-    user.status = 2; // @todo: "2" get from an interface
+    user.status = UserStatus.REGISTRATION_COMPLETE;
 
     const hash = await UtilsService.generateHash(password + user.salt);
     user.password = hash;
@@ -149,7 +149,7 @@ export class AuthService {
     const user = await this.authRepository.userRepository.findOne({
       username,
     });
-    if (user?.status != 2) {
+    if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
       return null;
     }
     const isPasswordValid = await UtilsService.isHashValid(

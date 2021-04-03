@@ -12,6 +12,12 @@ import {
 } from 'class-validator';
 import { Code } from './code.entity';
 
+export enum UserStatus {
+  INITIAL = 0,
+  PHONE_CONFIRMED = 1,
+  REGISTRATION_COMPLETE = 2,
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -39,7 +45,7 @@ export class User {
   @IsInt()
   @Min(0)
   @Max(10)
-  status: number;
+  status: UserStatus;
 
   @OneToMany(() => Code, (code) => code.user)
   codes: Code[];
