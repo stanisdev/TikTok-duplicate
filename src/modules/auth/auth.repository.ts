@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { SmsCodeLifetime } from './auth.interface';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CodeLifetime } from './auth.interface';
 import { User } from '../../../src/entities/user.entity';
 import { Code } from '../../../src/entities/code.entity';
-import { nanoid } from 'nanoid/async'
+import { nanoid } from 'nanoid/async';
 import * as moment from 'moment';
 
 @Injectable()
@@ -29,22 +29,21 @@ export class AuthRepository {
     return user;
   }
 
-  async createSmsCode(
+  async createCode(
     user: User,
     code: string,
-    lifetime: SmsCodeLifetime
+    lifetime: CodeLifetime,
+    type: number,
   ): Promise<void> {
     const expireAt = moment()
-      .add(
-        lifetime.amount,
-        lifetime.unit as 'hours' | 'days'
-      )
+      .add(lifetime.amount, lifetime.unit as 'hours' | 'days')
       .toDate();
     const record = new Code();
     record.code = code;
     record.user = user;
+    record.type = type;
     record.expireAt = expireAt;
-    
+
     await this.codeRepository.save(record);
   }
 
@@ -68,13 +67,8 @@ export class AuthRepository {
     return this.codeRepository
       .createQueryBuilder('codeTable')
       .innerJoinAndSelect('codeTable.user', 'user')
-      .select([
-        'codeTable.id',
-        'codeTable.expireAt',
-        'user.id',
-        'user.status'
-      ])
-      .where('codeTable.code = :code',  { code })
+      .select(['codeTable.id', 'codeTable.expireAt', 'user.id', 'user.status'])
+      .where('codeTable.code = :code', { code })
       .getOne();
   }
 
@@ -89,7 +83,7 @@ export class AuthRepository {
       .select('id')
       .where('user.username = :username', { username })
       .getRawOne<User>();
-    
-      return user instanceof Object;
+
+    return user instanceof Object;
   }
 }

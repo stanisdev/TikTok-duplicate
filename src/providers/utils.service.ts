@@ -7,7 +7,7 @@ export class UtilsService {
     return bcrypt.hash(input, this.hashSaltRounds);
   }
 
-  static isHashValid(hash: string, input: string): Promise<boolean> {
+  static isHashValid(input: string, hash: string): Promise<boolean> {
     return bcrypt.compare(input, hash);
   }
 }

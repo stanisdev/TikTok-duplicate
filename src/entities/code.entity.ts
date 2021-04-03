@@ -1,6 +1,17 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsDate, MaxLength, IsUUID } from 'class-validator';
+import {
+  IsDate,
+  MaxLength,
+  IsNumber,
+  IsPositive,
+} from 'class-validator';
 import { User } from './user.entity';
+
+export enum CodeType {
+  SMS = 0,
+  JWT_ACCESS = 1,
+  JWT_REFRESH = 2,
+}
 
 @Entity('codes')
 export class Code {
@@ -11,7 +22,12 @@ export class Code {
   @MaxLength(40)
   code: string;
 
-  @ManyToOne(() => User, user => user.codes)
+  @Column()
+  @IsNumber()
+  @IsPositive()
+  type: CodeType;
+
+  @ManyToOne(() => User, (user) => user.codes)
   user: User;
 
   @Column()

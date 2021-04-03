@@ -1,4 +1,11 @@
-import { IsMobilePhone, IsNotEmpty, IsNumberString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  IsMobilePhone,
+  IsNotEmpty,
+  IsNumberString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterPhoneDto {
   @IsMobilePhone()
@@ -25,4 +32,12 @@ export class CompleteRegistrationDto {
   @IsNotEmpty()
   @IsUUID('4')
   userId: string;
+}
+
+export class SignInDto {
+  @IsNotEmpty()
+  username: string;
+
+  @IsNotEmpty()
+  password: string;
 }

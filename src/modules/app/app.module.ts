@@ -10,9 +10,7 @@ import configuration from '../../config/configuration';
   imports: [
     AuthModule,
     UserModule,
-    TypeOrmModule.forRoot(
-      configuration().db
-    ),
+    TypeOrmModule.forRoot(configuration().db),
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
