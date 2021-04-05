@@ -1,10 +1,16 @@
-import { Body, Controller, Request, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 import {
   RegisterPhoneDto,
   ConfirmPhoneDto,
   CompleteRegistrationDto,
   SignInDto,
 } from './auth.dto';
+import {
+  AuthTokens,
+  AvailableUserFields,
+  ConfirmPhoneResponse,
+} from './auth.interface';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -17,18 +23,28 @@ export class AuthController {
   }
 
   @Post('confirm_phone')
-  async confirmPhone(@Body() { code }: ConfirmPhoneDto) {
+  async confirmPhone(
+    @Body() { code }: ConfirmPhoneDto
+  ): Promise<ConfirmPhoneResponse> {
     const userId = await this.authService.confirmPhone(code);
     return { userId };
   }
 
   @Post('complete_registration')
-  async completeRegistration(@Body() dto: CompleteRegistrationDto) {
+  async completeRegistration(
+    @Body() dto: CompleteRegistrationDto
+  ): Promise<void> {
     await this.authService.completeRegistration(dto);
   }
 
   @Post('sign_in')
-  async signIn(@Body() dto: SignInDto) {
+  async signIn(@Body() dto: SignInDto): Promise<AuthTokens> {
     return this.authService.signIn(dto);
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard)
+  async me(@Request() req): Promise<AvailableUserFields> {
+    return this.authService.getUserInfo(req.user);
   }
 }

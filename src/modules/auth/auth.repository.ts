@@ -63,11 +63,10 @@ export class AuthRepository {
       .execute();
   }
 
-  findUserBySmsCode(code: string): Promise<Code> {
+  findUserByCode(code: string): Promise<Code> {
     return this.codeRepository
       .createQueryBuilder('codeTable')
       .innerJoinAndSelect('codeTable.user', 'user')
-      .select(['codeTable.id', 'codeTable.expireAt', 'user.id', 'user.status'])
       .where('codeTable.code = :code', { code })
       .getOne();
   }

@@ -2,13 +2,14 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { customAlphabet, nanoid } from 'nanoid/async';
 import { ConfigService } from '@nestjs/config';
 import { AuthRepository } from './auth.repository';
-import { AuthTokens, CodeLifetime } from './auth.interface';
+import { AuthTokens, AvailableUserFields, CodeLifetime } from './auth.interface';
 import { CompleteRegistrationDto, SignInDto } from './auth.dto';
 import { UtilsService } from '../../../src/providers/utils.service';
 import { CodeType } from '../../entities/code.entity';
 import { User, UserStatus } from '../../entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { I18nRequestScopeService } from 'nestjs-i18n';
+import * as lodash from 'lodash';
 
 @Injectable()
 export class AuthService {
@@ -96,7 +97,7 @@ export class AuthService {
    * the code from sms
    */
   async confirmPhone(code: string): Promise<string> {
-    const record = await this.authRepository.findUserBySmsCode(code);
+    const record = await this.authRepository.findUserByCode(code);
     if (
       record?.user?.status != UserStatus.INITIAL ||
       Date.now() > new Date(record.expireAt).getTime()
@@ -223,6 +224,12 @@ export class AuthService {
       secret,
       expiresIn,
     });
+  }
+
+  getUserInfo(user: User): AvailableUserFields {
+    return lodash.pick(
+      user, ['id', 'phone', 'username', 'status', 'createdAt']
+    );
   }
 
   private generateCode(): Promise<string> {
