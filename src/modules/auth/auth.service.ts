@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { customAlphabet, nanoid } from 'nanoid/async';
 import { ConfigService } from '@nestjs/config';
 import { AuthRepository } from './auth.repository';
@@ -8,6 +8,7 @@ import { UtilsService } from '../../../src/providers/utils.service';
 import { CodeType } from '../../entities/code.entity';
 import { User, UserStatus } from '../../entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { I18nRequestScopeService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,7 @@ export class AuthService {
     private configService: ConfigService,
     private authRepository: AuthRepository,
     private jwtService: JwtService,
+    private i18n: I18nRequestScopeService,
   ) {
     const [count, unit] = this.configService
       .get<string>('auth.smsCodeLifetime')
@@ -33,13 +35,12 @@ export class AuthService {
   async registerPhoneNumber(phone: string) {
     if (!(await this.shouldRegisterPhone(phone))) {
       return {
-        // @todo: move to i18n
-        message: 'The new confirm code has been sent to your phone number',
+        message: await this.i18n.t('auth.new_confirm_code_sended'),
       };
     }
     await this.createInitialUser(phone);
     return {
-      message: 'Check your phone. The confirm code has been sent via SMS',
+      message: await this.i18n.t('auth.confirm_code_sended')
     };
   }
 
@@ -84,7 +85,9 @@ export class AuthService {
       this.sendCodeViaSms(code);
       return false;
     } else {
-      throw new BadRequestException('The phone number is already registered');
+      throw new BadRequestException(
+        await this.i18n.t('auth.phone_number_exists')
+      );
     }
   }
 
@@ -98,7 +101,9 @@ export class AuthService {
       record?.user?.status != UserStatus.INITIAL ||
       Date.now() > new Date(record.expireAt).getTime()
     ) {
-      throw new BadRequestException('The confirmation code is incorrect');
+      throw new BadRequestException(
+        await this.i18n.t('auth.wrong_confirmation_code')
+      );
     }
     /**
      * If checking passed successfully
@@ -124,10 +129,14 @@ export class AuthService {
     const user = await this.authRepository.userRepository.findOne(userId);
 
     if (user?.status != UserStatus.PHONE_CONFIRMED) {
-      throw new BadRequestException('User is not found');
+      throw new BadRequestException(
+        await this.i18n.t('auth.user_not_found')
+      );
     }
     if (await this.authRepository.doesUsernameExist(username)) {
-      throw new BadRequestException('Please, specify another username');
+      throw new BadRequestException(
+        await this.i18n.t('auth.username_registered')
+      );
     }
     user.username = username;
     user.salt = await nanoid(5);
@@ -139,34 +148,15 @@ export class AuthService {
   }
 
   /**
-   * Find user by username and if one was found
-   * check his password
-   */
-  async findUsernameAndCheckPassword({
-    username,
-    password,
-  }: SignInDto): Promise<User | null> {
-    const user = await this.authRepository.userRepository.findOne({
-      username,
-    });
-    if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
-      return null;
-    }
-    const isPasswordValid = await UtilsService.isHashValid(
-      password + user.salt,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      return null;
-    }
-    return user;
-  }
-
-  /**
    * Using the given user, generate and return appropriate
    * access and refresh tokens
    */
-  async signIn(user: User): Promise<AuthTokens> {
+  async signIn(dto: SignInDto): Promise<AuthTokens> {
+    const user = await this.findUsernameAndCheckPassword(dto);
+    if (!(user instanceof User)) {
+      throw new UnauthorizedException();
+    }
+
     const [accessToken, refreshToken] = await Promise.all([
       this.createJwtToken(
         user,
@@ -181,6 +171,30 @@ export class AuthService {
     ]);
     return { accessToken, refreshToken };
   }
+
+    /**
+   * Find user by username and if one was found
+   * check his password
+   */
+     private async findUsernameAndCheckPassword({
+      username,
+      password,
+    }: SignInDto): Promise<User | null> {
+      const user = await this.authRepository.userRepository.findOne({
+        username,
+      });
+      if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
+        return null;
+      }
+      const isPasswordValid = await UtilsService.isHashValid(
+        password + user.salt,
+        user.password,
+      );
+      if (!isPasswordValid) {
+        return null;
+      }
+      return user;
+    }
 
   /**
    * Generate a jwt token

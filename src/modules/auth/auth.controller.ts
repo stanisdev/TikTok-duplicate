@@ -1,9 +1,9 @@
 import { Body, Controller, Request, Post, UseGuards } from '@nestjs/common';
-import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import {
   RegisterPhoneDto,
   ConfirmPhoneDto,
   CompleteRegistrationDto,
+  SignInDto,
 } from './auth.dto';
 import { AuthService } from './auth.service';
 
@@ -27,9 +27,8 @@ export class AuthController {
     await this.authService.completeRegistration(dto);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('sign_in')
-  async signIn(@Request() req) {
-    return this.authService.signIn(req.user);
+  async signIn(@Body() dto: SignInDto) {
+    return this.authService.signIn(dto);
   }
 }
