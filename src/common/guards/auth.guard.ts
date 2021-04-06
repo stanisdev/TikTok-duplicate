@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from '@nestjs/jwt';
-import { AuthRepository } from "src/modules/auth/auth.repository";
+import { AuthRepository } from '../../modules/auth/auth.repository';
 import { UserStatus } from '../../entities/user.entity';
 import { CodeType } from '../../entities/code.entity';
 
@@ -37,13 +37,14 @@ export class AuthGuard implements CanActivate {
      */
     const record = await this.authRepository.findUserByCode(decrypted.code);
     if (
-      record.type !== CodeType.JWT_ACCESS ||
+      record?.type !== CodeType.JWT_ACCESS ||
       new Date(record.expireAt).getTime() <= Date.now() ||
       record.user.id !== decrypted.sub ||
       record.user.status !== UserStatus.REGISTRATION_COMPLETE
     ) {
       throw new ForbiddenException();
     }
+    request.code = record;
     request.user = record.user;
     return true;
   }

@@ -22,6 +22,11 @@ export class Code {
   @IsPositive()
   type: CodeType;
 
+  @Column()
+  @IsNumber()
+  @IsPositive()
+  parentCodeId: number;
+
   @ManyToOne(() => User, (user) => user.codes)
   user: User;
 

@@ -7,6 +7,7 @@ import { CompleteRegistrationDto, SignInDto } from './auth.dto';
 import { UtilsService } from '../../../src/providers/utils.service';
 import { CodeType } from '../../entities/code.entity';
 import { User, UserStatus } from '../../entities/user.entity';
+import { Code } from '../../entities/code.entity';
 import { JwtService } from '@nestjs/jwt';
 import { I18nRequestScopeService } from 'nestjs-i18n';
 import * as lodash from 'lodash';
@@ -158,18 +159,17 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const [accessToken, refreshToken] = await Promise.all([
-      this.createJwtToken(
-        user,
-        CodeType.JWT_ACCESS,
-        'auth.jwt.tokenLifetime.access',
-      ),
-      this.createJwtToken(
-        user,
-        CodeType.JWT_REFRESH,
-        'auth.jwt.tokenLifetime.refresh',
-      ),
-    ]);
+    const [accessToken, codeRecord] = await this.createJwtToken(
+      user,
+      CodeType.JWT_ACCESS,
+      'auth.jwt.tokenLifetime.access',
+    );
+    const [refreshToken] = await this.createJwtToken(
+      user,
+      CodeType.JWT_REFRESH,
+      'auth.jwt.tokenLifetime.refresh',
+      codeRecord.id,
+    )
     return { accessToken, refreshToken };
   }
 
@@ -204,32 +204,43 @@ export class AuthService {
     user: User,
     type: CodeType,
     config: string,
-  ): Promise<string> {
+    parentCodeId?: number,
+  ): Promise<[string, Code]> {
     const expiresIn = this.configService.get<string>(config);
     const [amount, unit] = expiresIn.split(' ');
 
     const code = await nanoid(40);
-    await this.authRepository.createCode(
+    const codeRecord = await this.authRepository.createCode(
       user,
       code,
       { amount: Number.parseInt(amount), unit },
       type,
+      parentCodeId,
     );
     const payload = {
       code,
       sub: user.id,
     };
     const secret = this.configService.get<string>('auth.jwt.secret');
-    return this.jwtService.sign(payload, {
+    const token = await this.jwtService.signAsync(payload, {
       secret,
       expiresIn,
-    });
+    })
+    return [token, codeRecord];
   }
 
   getUserInfo(user: User): AvailableUserFields {
     return lodash.pick(
       user, ['id', 'phone', 'username', 'status', 'createdAt']
     );
+  }
+
+  async logout(code: Code, everywhere: boolean): Promise<void> {
+    if (everywhere) {
+      await this.authRepository.removeAllAuthTokens(code.user.id);
+    } else {
+      await this.authRepository.codeRepository.delete(code.id);
+    }
   }
 
   private generateCode(): Promise<string> {

@@ -1,5 +1,5 @@
-import { Body, Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
-import { AuthGuard } from 'src/common/guards/auth.guard';
+import { Body, Query, Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
+import { AuthGuard } from '../../common/guards/auth.guard';
 import {
   RegisterPhoneDto,
   ConfirmPhoneDto,
@@ -44,7 +44,16 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  async me(@Request() req): Promise<AvailableUserFields> {
-    return this.authService.getUserInfo(req.user);
+  async me(@Request() { user }): Promise<AvailableUserFields> {
+    return this.authService.getUserInfo(user);
+  }
+
+  @Get('logout')
+  @UseGuards(AuthGuard)
+  async logout(
+    @Request() { code },
+    @Query('allDevices') allDevices: string,
+  ): Promise<void> {
+    await this.authService.logout(code, Boolean(allDevices));
   }
 }

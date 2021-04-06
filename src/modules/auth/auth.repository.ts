@@ -14,7 +14,7 @@ export class AuthRepository {
     public userRepository: Repository<User>,
 
     @InjectRepository(Code)
-    private codeRepository: Repository<Code>,
+    public codeRepository: Repository<Code>,
   ) {}
 
   async createInitialUser(phone: string): Promise<User> {
@@ -34,7 +34,8 @@ export class AuthRepository {
     code: string,
     lifetime: CodeLifetime,
     type: number,
-  ): Promise<void> {
+    parentCodeId?: number,
+  ): Promise<Code> {
     const expireAt = moment()
       .add(lifetime.amount, lifetime.unit as 'hours' | 'days')
       .toDate();
@@ -43,8 +44,9 @@ export class AuthRepository {
     record.user = user;
     record.type = type;
     record.expireAt = expireAt;
+    record.parentCodeId = parentCodeId;
 
-    await this.codeRepository.save(record);
+    return this.codeRepository.save(record);
   }
 
   findUserByPhone(phone: string): Promise<User> {
@@ -79,5 +81,16 @@ export class AuthRepository {
       .getRawOne<User>();
 
     return user instanceof Object;
+  }
+
+  async removeAllAuthTokens(userId: string): Promise<void> {
+    const types = [1, 2];
+
+    await this.codeRepository
+      .createQueryBuilder()
+      .delete()
+      .where('userId = :userId', { userId })
+      .andWhere("type IN (:...types)", { types })
+      .execute();
   }
 }
