@@ -11,10 +11,10 @@ import { Repository } from 'typeorm';
 export class UserServiceRepository {
   constructor(
     @InjectRepository(UserRelationship)
-    private readonly userRelationshipRepository: Repository<UserRelationship>,
+    public readonly userRelationshipRepository: Repository<UserRelationship>,
 
     @InjectRepository(User)
-    public readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async createRelationship(
@@ -30,18 +30,17 @@ export class UserServiceRepository {
     await this.userRelationshipRepository.save(record);
   }
 
-  async doesRelationshipExist(
+  async findRelationship(
     activeUserId: string,
     exposedUserId: string,
     type: UserRelationshipType,
-  ): Promise<boolean> {
-    const record = await this.userRelationshipRepository.findOne({
+  ): Promise<UserRelationship> {
+    return this.userRelationshipRepository.findOne({
       where: {
         activeUserId,
         exposedUserId,
         type,
       }
     });
-    return record instanceof Object;
   }
 }
