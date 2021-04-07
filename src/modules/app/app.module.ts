@@ -20,6 +20,7 @@ import configuration from '../../config/configuration';
       fallbackLanguage: 'en',
       parser: I18nJsonParser,
       parserOptions: {
+        // @todo: remove this
         path: '/home/stas/Documents/Code/TikTok-duplicate/src/i18n',
       },
     }),

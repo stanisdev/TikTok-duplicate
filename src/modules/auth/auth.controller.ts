@@ -15,7 +15,7 @@ import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register_phone')
   async registerPhone(@Body() { phone }: RegisterPhoneDto) {
@@ -55,5 +55,11 @@ export class AuthController {
     @Query('allDevices') allDevices: string,
   ): Promise<void> {
     await this.authService.logout(code, Boolean(allDevices));
+  }
+
+  @Get('update_tokens')
+  @UseGuards(AuthGuard)
+  async updateTokens() {
+    // @todo: define the endpoint
   }
 }

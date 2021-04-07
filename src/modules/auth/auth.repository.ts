@@ -8,13 +8,13 @@ import { nanoid } from 'nanoid/async';
 import * as moment from 'moment';
 
 @Injectable()
-export class AuthRepository {
+export class AuthServiceRepository {
   constructor(
     @InjectRepository(User)
-    public userRepository: Repository<User>,
+    public readonly userRepository: Repository<User>,
 
     @InjectRepository(Code)
-    public codeRepository: Repository<Code>,
+    public readonly codeRepository: Repository<Code>,
   ) {}
 
   async createInitialUser(phone: string): Promise<User> {

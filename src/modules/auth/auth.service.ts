@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { customAlphabet, nanoid } from 'nanoid/async';
 import { ConfigService } from '@nestjs/config';
-import { AuthRepository } from './auth.repository';
+import { AuthServiceRepository } from './auth.repository';
 import { AuthTokens, AvailableUserFields, CodeLifetime } from './auth.interface';
 import { CompleteRegistrationDto, SignInDto } from './auth.dto';
 import { UtilsService } from '../../../src/providers/utils.service';
@@ -17,10 +17,10 @@ export class AuthService {
   private smsCodeLifetime: CodeLifetime;
 
   constructor(
-    private configService: ConfigService,
-    private authRepository: AuthRepository,
-    private jwtService: JwtService,
-    private i18n: I18nRequestScopeService,
+    private readonly configService: ConfigService,
+    private readonly repository: AuthServiceRepository,
+    private readonly jwtService: JwtService,
+    private readonly i18n: I18nRequestScopeService,
   ) {
     const [count, unit] = this.configService
       .get<string>('auth.smsCodeLifetime')
@@ -51,9 +51,9 @@ export class AuthService {
    * and exact phone
    */
   private async createInitialUser(phone: string): Promise<void> {
-    const user = await this.authRepository.createInitialUser(phone);
+    const user = await this.repository.createInitialUser(phone);
     const code = await this.generateCode();
-    await this.authRepository.createCode(
+    await this.repository.createCode(
       user,
       code,
       this.smsCodeLifetime,
@@ -67,7 +67,7 @@ export class AuthService {
    * or should we just send a new confirm code
    */
   private async shouldRegisterPhone(phone: string): Promise<boolean> {
-    const user = await this.authRepository.findUserByPhone(phone);
+    const user = await this.repository.findUserByPhone(phone);
     if (!(user instanceof Object)) {
       return true;
     }
@@ -75,10 +75,10 @@ export class AuthService {
       /**
        * Remove the previously created code
        */
-      await this.authRepository.removeAllSmsCodes(user);
+      await this.repository.removeAllSmsCodes(user);
       const code = await this.generateCode();
 
-      await this.authRepository.createCode(
+      await this.repository.createCode(
         user,
         code,
         this.smsCodeLifetime,
@@ -98,7 +98,7 @@ export class AuthService {
    * the code from sms
    */
   async confirmPhone(code: string): Promise<string> {
-    const record = await this.authRepository.findUserByCode(code);
+    const record = await this.repository.findUserByCode(code);
     if (
       record?.user?.status != UserStatus.INITIAL ||
       Date.now() > new Date(record.expireAt).getTime()
@@ -113,8 +113,8 @@ export class AuthService {
     const { user } = record;
     user.status = UserStatus.PHONE_CONFIRMED;
 
-    await this.authRepository.removeAllSmsCodes(user);
-    await this.authRepository.userRepository.save(user);
+    await this.repository.removeAllSmsCodes(user);
+    await this.repository.userRepository.save(user);
     return user.id;
   }
 
@@ -128,14 +128,14 @@ export class AuthService {
     password,
     userId,
   }: CompleteRegistrationDto): Promise<void> {
-    const user = await this.authRepository.userRepository.findOne(userId);
+    const user = await this.repository.userRepository.findOne(userId);
 
     if (user?.status != UserStatus.PHONE_CONFIRMED) {
       throw new BadRequestException(
         await this.i18n.t('auth.user_not_found')
       );
     }
-    if (await this.authRepository.doesUsernameExist(username)) {
+    if (await this.repository.doesUsernameExist(username)) {
       throw new BadRequestException(
         await this.i18n.t('auth.username_registered')
       );
@@ -146,7 +146,7 @@ export class AuthService {
 
     const hash = await UtilsService.generateHash(password + user.salt);
     user.password = hash;
-    await this.authRepository.userRepository.save(user);
+    await this.repository.userRepository.save(user);
   }
 
   /**
@@ -181,7 +181,7 @@ export class AuthService {
       username,
       password,
     }: SignInDto): Promise<User | null> {
-      const user = await this.authRepository.userRepository.findOne({
+      const user = await this.repository.userRepository.findOne({
         username,
       });
       if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
@@ -210,7 +210,7 @@ export class AuthService {
     const [amount, unit] = expiresIn.split(' ');
 
     const code = await nanoid(40);
-    const codeRecord = await this.authRepository.createCode(
+    const codeRecord = await this.repository.createCode(
       user,
       code,
       { amount: Number.parseInt(amount), unit },
@@ -237,9 +237,9 @@ export class AuthService {
 
   async logout(code: Code, everywhere: boolean): Promise<void> {
     if (everywhere) {
-      await this.authRepository.removeAllAuthTokens(code.user.id);
+      await this.repository.removeAllAuthTokens(code.user.id);
     } else {
-      await this.authRepository.codeRepository.delete(code.id);
+      await this.repository.codeRepository.delete(code.id);
     }
   }
 
