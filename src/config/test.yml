@@ -18,3 +18,6 @@ auth:
     tokenLifetime:
       access: '2 hours'
       refresh: '4 weeks'
+
+dirs:
+  src: 'not defined'

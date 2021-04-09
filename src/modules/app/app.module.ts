@@ -7,6 +7,7 @@ import { VideoModule } from '../video/video.module';
 import { AppController } from './app.controller';
 import { I18nModule, I18nJsonParser } from 'nestjs-i18n';
 import configuration from '../../config/configuration';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -22,8 +23,7 @@ import configuration from '../../config/configuration';
       fallbackLanguage: 'en',
       parser: I18nJsonParser,
       parserOptions: {
-        // @todo: remove this
-        path: '/home/stas/Documents/Code/TikTok-duplicate/src/i18n',
+        path: join(configuration().dirs.src, 'i18n'),
       },
     }),
   ],

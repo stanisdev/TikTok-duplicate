@@ -19,3 +19,6 @@ auth:
     tokenLifetime:
       access: '2 hours' # https://github.com/vercel/ms
       refresh: '4 weeks'
+
+dirs:
+  src: 'not defined'
