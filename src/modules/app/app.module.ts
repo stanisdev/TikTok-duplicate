@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
+import { VideoModule } from '../video/video.module';
 import { AppController } from './app.controller';
 import { I18nModule, I18nJsonParser } from 'nestjs-i18n';
 import configuration from '../../config/configuration';
@@ -11,6 +12,7 @@ import configuration from '../../config/configuration';
   imports: [
     AuthModule,
     UserModule,
+    VideoModule,
     TypeOrmModule.forRoot(configuration().db),
     ConfigModule.forRoot({
       load: [configuration],

@@ -1,5 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsDate, MaxLength, IsNumber, IsPositive, Min, Max } from 'class-validator';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  IsDate,
+  MaxLength,
+  IsNumber,
+  IsPositive,
+  Min,
+  Max
+} from 'class-validator';
 import { User } from './user.entity';
 
 export enum VideoAvailableFor {
@@ -10,10 +17,7 @@ export enum VideoAvailableFor {
 
 @Entity('videos')
 export class Video {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
+  @PrimaryColumn()
   @Min(100000000000000)
   @Max(999999999999999)
   publicId: number;

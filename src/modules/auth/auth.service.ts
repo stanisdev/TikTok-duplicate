@@ -52,7 +52,10 @@ export class AuthService {
    */
   private async createInitialUser(phone: string): Promise<void> {
     const user = await this.repository.createInitialUser(phone);
-    const code = await this.generateCode();
+    const code = await UtilsService.generateRandomString({
+      length: 5,
+      onlyDigits: true
+    });
     await this.repository.createCode(
       user,
       code,
@@ -76,7 +79,10 @@ export class AuthService {
        * Remove the previously created code
        */
       await this.repository.removeAllSmsCodes(user);
-      const code = await this.generateCode();
+      const code = await UtilsService.generateRandomString({
+        length: 5,
+        onlyDigits: true
+      });
 
       await this.repository.createCode(
         user,
@@ -141,7 +147,7 @@ export class AuthService {
       );
     }
     user.username = username;
-    user.salt = await nanoid(5);
+    user.salt = await UtilsService.generateRandomString({ length: 5 });
     user.status = UserStatus.REGISTRATION_COMPLETE;
 
     const hash = await UtilsService.generateHash(password + user.salt);
@@ -173,29 +179,29 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-    /**
+  /**
    * Find user by username and if one was found
    * check his password
    */
-     private async findUsernameAndCheckPassword({
+  private async findUsernameAndCheckPassword({
+    username,
+    password,
+  }: SignInDto): Promise<User | null> {
+    const user = await this.repository.userRepository.findOne({
       username,
-      password,
-    }: SignInDto): Promise<User | null> {
-      const user = await this.repository.userRepository.findOne({
-        username,
-      });
-      if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
-        return null;
-      }
-      const isPasswordValid = await UtilsService.isHashValid(
-        password + user.salt,
-        user.password,
-      );
-      if (!isPasswordValid) {
-        return null;
-      }
-      return user;
+    });
+    if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
+      return null;
     }
+    const isPasswordValid = await UtilsService.isHashValid(
+      password + user.salt,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      return null;
+    }
+    return user;
+  }
 
   /**
    * Generate a jwt token
@@ -209,7 +215,7 @@ export class AuthService {
     const expiresIn = this.configService.get<string>(config);
     const [amount, unit] = expiresIn.split(' ');
 
-    const code = await nanoid(40);
+    const code = await UtilsService.generateRandomString({ length: 40 });
     const codeRecord = await this.repository.createCode(
       user,
       code,
@@ -243,12 +249,8 @@ export class AuthService {
     }
   }
 
-  private generateCode(): Promise<string> {
-    // @todo: 5 - move to config
-    return customAlphabet('1234567890', 5)();
-  }
-
-  private sendCodeViaSms(code: string) {
-    // @hint: dummy method
-  }
+  /**
+   * @description: the dummy method
+   */
+  private sendCodeViaSms(code: string) {}
 }
