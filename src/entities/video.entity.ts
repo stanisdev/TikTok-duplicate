@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import {
   IsDate,
   MaxLength,
@@ -8,6 +8,7 @@ import {
   Max
 } from 'class-validator';
 import { User } from './user.entity';
+import { VideoLike } from './videoLike.entity';
 
 export enum VideoAvailableFor {
   PUBLIC = 0,
@@ -40,6 +41,9 @@ export class Video {
   @Column()
   @IsNumber()
   viewsCount: number;
+
+  @OneToMany(() => VideoLike, like => like.video)
+  likes: VideoLike[];
 
   @Column()
   @IsDate()

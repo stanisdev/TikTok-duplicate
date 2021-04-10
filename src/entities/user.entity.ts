@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { Code } from './code.entity';
 import { Video } from './video.entity';
+import { VideoLike } from './videoLike.entity';
 
 export enum UserStatus {
   INITIAL = 0,
@@ -53,6 +54,9 @@ export class User {
 
   @OneToMany(() => Video, (video) => video.user)
   videos: Video[];
+
+  @OneToMany(() => VideoLike, (like) => like.user)
+  videoLikes: VideoLike[];
 
   @Column()
   @IsDate()
