@@ -28,7 +28,7 @@ export class AuthGuard implements CanActivate {
     let decrypted;
     try {
       decrypted = await this.jwtService
-        .verifyAsync(token, { secret: this.jwtSecret});
+        .verifyAsync(token, { secret: this.jwtSecret });
     } catch {
       return false;
     }
@@ -39,7 +39,7 @@ export class AuthGuard implements CanActivate {
     if (
       record?.type !== CodeType.JWT_ACCESS ||
       new Date(record.expireAt).getTime() <= Date.now() ||
-      record.user.id !== decrypted.sub ||
+      record.user?.id !== decrypted.sub ||
       record.user.status !== UserStatus.REGISTRATION_COMPLETE
     ) {
       throw new ForbiddenException();

@@ -5,6 +5,7 @@ import {
   ConfirmPhoneDto,
   CompleteRegistrationDto,
   SignInDto,
+  UpdateJwtTokensDto,
 } from './auth.dto';
 import {
   AuthTokens,
@@ -57,9 +58,10 @@ export class AuthController {
     await this.authService.logout(code, Boolean(allDevices));
   }
 
-  @Get('update_tokens')
-  @UseGuards(AuthGuard)
-  async updateTokens() {
-    // @todo: define the endpoint
+  @Post('update_tokens')
+  async updateTokens(
+    @Body() dto: UpdateJwtTokensDto
+  ): Promise<AuthTokens> {
+    return this.authService.updateJwtTokens(dto);
   }
 }

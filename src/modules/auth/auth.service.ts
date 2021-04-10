@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { customAlphabet, nanoid } from 'nanoid/async';
 import { ConfigService } from '@nestjs/config';
 import { AuthServiceRepository } from './auth.repository';
 import { AuthTokens, AvailableUserFields, CodeLifetime } from './auth.interface';
-import { CompleteRegistrationDto, SignInDto } from './auth.dto';
+import { CompleteRegistrationDto, SignInDto, UpdateJwtTokensDto } from './auth.dto';
 import { UtilsService } from '../../../src/providers/utils.service';
 import { CodeType } from '../../entities/code.entity';
 import { User, UserStatus } from '../../entities/user.entity';
@@ -15,6 +15,7 @@ import * as lodash from 'lodash';
 @Injectable()
 export class AuthService {
   private smsCodeLifetime: CodeLifetime;
+  private jwtSecret: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -29,6 +30,8 @@ export class AuthService {
       amount: Number.parseInt(count),
       unit,
     };
+    this.jwtSecret = this.configService
+      .get<string>('auth.jwt.secret');
   }
 
   /**
@@ -160,11 +163,28 @@ export class AuthService {
    * access and refresh tokens
    */
   async signIn(dto: SignInDto): Promise<AuthTokens> {
-    const user = await this.findUsernameAndCheckPassword(dto);
-    if (!(user instanceof User)) {
+    const user = await this.repository.userRepository.findOne({
+      username: dto.username,
+    });
+    if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
       throw new UnauthorizedException();
     }
+    const isPasswordValid = await UtilsService.isHashValid(
+      dto.password + user.salt,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException();
+    }
+    return this.createAccessAndRefreshTokens(user);
+  }
 
+  /**
+   * Create access and appropriate refresh token
+   */
+  private async createAccessAndRefreshTokens(
+    user: User
+  ): Promise<AuthTokens> {
     const [accessToken, codeRecord] = await this.createJwtToken(
       user,
       CodeType.JWT_ACCESS,
@@ -177,30 +197,6 @@ export class AuthService {
       codeRecord.id,
     )
     return { accessToken, refreshToken };
-  }
-
-  /**
-   * Find user by username and if one was found
-   * check his password
-   */
-  private async findUsernameAndCheckPassword({
-    username,
-    password,
-  }: SignInDto): Promise<User | null> {
-    const user = await this.repository.userRepository.findOne({
-      username,
-    });
-    if (user?.status != UserStatus.REGISTRATION_COMPLETE) {
-      return null;
-    }
-    const isPasswordValid = await UtilsService.isHashValid(
-      password + user.salt,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      return null;
-    }
-    return user;
   }
 
   /**
@@ -227,26 +223,62 @@ export class AuthService {
       code,
       sub: user.id,
     };
-    const secret = this.configService.get<string>('auth.jwt.secret');
     const token = await this.jwtService.signAsync(payload, {
-      secret,
+      secret: this.jwtSecret,
       expiresIn,
     })
     return [token, codeRecord];
   }
 
+  /**
+   * Get the list of fields of user's object that
+   * available to be public
+   */
   getUserInfo(user: User): AvailableUserFields {
     return lodash.pick(
       user, ['id', 'phone', 'username', 'status', 'createdAt']
     );
   }
 
+  /**
+   * Remove a pair of tokens or all tokens of the user
+   * if he wanted to log out from all devices
+   */
   async logout(code: Code, everywhere: boolean): Promise<void> {
     if (everywhere) {
       await this.repository.removeAllAuthTokens(code.user.id);
-    } else {
-      await this.repository.codeRepository.delete(code.id);
+      return;
     }
+    await this.repository.codeRepository.delete(code.id);
+  }
+
+  /**
+   * Remove old pair of the tokens and create
+   * a new one
+   */
+  async updateJwtTokens(dto: UpdateJwtTokensDto): Promise<AuthTokens> {
+    let decrypted;
+    try {
+      decrypted = await this.jwtService
+        .verifyAsync(dto.refreshToken, { secret: this.jwtSecret });
+    } catch {
+      throw new ForbiddenException();
+    }
+    const record = await this.repository.findUserByCode(decrypted.code);
+    if (
+      record?.type !== CodeType.JWT_REFRESH ||
+      record.user?.id !== decrypted.sub ||
+      record.user.status !== UserStatus.REGISTRATION_COMPLETE ||
+      new Date(record.expireAt).getTime() <= Date.now()
+    ) {
+      throw new ForbiddenException();
+    }
+    /**
+     * Delete access and refresh tokens at once
+     * and create a new pair
+     */
+    await this.repository.codeRepository.delete(record.parentCodeId);
+    return this.createAccessAndRefreshTokens(record.user);
   }
 
   /**

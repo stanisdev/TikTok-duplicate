@@ -41,3 +41,8 @@ export class SignInDto {
   @IsNotEmpty()
   password: string;
 }
+
+export class UpdateJwtTokensDto {
+  @IsNotEmpty()
+  refreshToken: string;
+}
