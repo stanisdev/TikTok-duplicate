@@ -13,6 +13,7 @@ import {
 import { Code } from './code.entity';
 import { Video } from './video.entity';
 import { VideoLike } from './videoLike.entity';
+import { CommentLike } from './commentLike.entity';
 
 export enum UserStatus {
   INITIAL = 0,
@@ -57,6 +58,9 @@ export class User {
 
   @OneToMany(() => VideoLike, (like) => like.user)
   videoLikes: VideoLike[];
+
+  @OneToMany(() => CommentLike, (like) => like.user)
+  commentLikes: CommentLike[];
 
   @Column()
   @IsDate()

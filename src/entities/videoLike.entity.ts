@@ -1,5 +1,4 @@
-import { IsNumber, IsUUID } from 'class-validator';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Entity, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
 import { Video } from './video.entity';
 

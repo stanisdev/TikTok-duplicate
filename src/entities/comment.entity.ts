@@ -1,15 +1,14 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn, OneToMany } from 'typeorm';
 import {
   IsDate,
   MaxLength,
   IsNumber,
-  IsPositive,
   Min,
   Max,
-  IsInt
 } from 'class-validator';
 import { User } from './user.entity';
 import { Video } from './video.entity';
+import { CommentLike } from './commentLike.entity';
 
 @Entity('comments')
 export class Comment {
@@ -40,6 +39,9 @@ export class Comment {
   @IsNumber()
   @Min(0)
   repliesCount: number;
+
+  @OneToMany(() => CommentLike, like => like.comment)
+  likes: CommentLike[];
 
   @Column()
   @IsDate()
