@@ -1,4 +1,5 @@
 {
   "already_liked": "You have already liked this video",
-  "not_exists": "Video does not exist"
+  "not_exists": "Video does not exist",
+  "not_liked_before": "You did not liked this video"
 }

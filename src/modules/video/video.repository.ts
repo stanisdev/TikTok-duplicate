@@ -47,4 +47,11 @@ export class VideoServiceRepository {
       .andWhere('"videoId" = :videoId', { videoId: video.id })
       .getRawOne<Video>();
   }
+
+  async removeLike(user: User, video: Video): Promise<void> {
+    await this.videoLikeRepository.delete({
+      user,
+      video,
+    });
+  }
 }

@@ -34,4 +34,13 @@ export class VideoController {
   ): Promise<void> {
     await this.videoService.like(user, videoId);
   }
+
+  @Get(':videoId/remove_like')
+  @UseGuards(AuthGuard)
+  async removeLike(
+    @Request() { user },
+    @Param('videoId', new ParseIntPipe()) videoId: number,
+  ): Promise<void> {
+    await this.videoService.removeLike(user, videoId);
+  }
 }

@@ -47,6 +47,17 @@ export class VideoService {
     await this.repository.createLike(user, video);
   }
 
+  async removeLike(user: User, videoId: number): Promise<void> {
+    const video = await this.getVideoById(videoId);
+    const record = await this.repository.findLike(user, video);
+    if (!(record instanceof Object)) {
+      throw new BadRequestException(
+        await this.i18n.t('video.not_liked_before'),
+      );
+    }
+    await this.repository.removeLike(user, video);
+  }
+
   private async getVideoById(videoId: number): Promise<Video> {
     const video = await this.repository.videoRepository.findOne({
       id: videoId
