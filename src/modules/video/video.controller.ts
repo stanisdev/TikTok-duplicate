@@ -5,13 +5,13 @@ import {
   UseGuards,
   Request,
   Get,
-  Param,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { UploadVideoDto } from './video.dto';
 import { VideoService } from './video.service';
 import { UploadedVideoResponse } from './video.interface';
+import { GetVideo } from 'src/common/decorators/getVideo.decorator';
+import { Video } from 'src/entities/video.entity';
 
 @Controller('video')
 export class VideoController {
@@ -30,17 +30,17 @@ export class VideoController {
   @UseGuards(AuthGuard)
   async like(
     @Request() { user },
-    @Param('videoId', new ParseIntPipe()) videoId: number,
+    @GetVideo() video: Video,
   ): Promise<void> {
-    await this.videoService.like(user, videoId);
+    await this.videoService.like(user, video);
   }
 
   @Get(':videoId/remove_like')
   @UseGuards(AuthGuard)
   async removeLike(
     @Request() { user },
-    @Param('videoId', new ParseIntPipe()) videoId: number,
+    @GetVideo() video: Video,
   ): Promise<void> {
-    await this.videoService.removeLike(user, videoId);
+    await this.videoService.removeLike(user, video);
   }
 }

@@ -36,8 +36,7 @@ export class VideoService {
     }
   }
 
-  async like(user: User, videoId: number): Promise<void> {
-    const video = await this.getVideoById(videoId);
+  async like(user: User, video: Video): Promise<void> {
     const record = await this.repository.findLike(user, video);
     if (record instanceof Object) {
       throw new BadRequestException(
@@ -47,8 +46,7 @@ export class VideoService {
     await this.repository.createLike(user, video);
   }
 
-  async removeLike(user: User, videoId: number): Promise<void> {
-    const video = await this.getVideoById(videoId);
+  async removeLike(user: User, video: Video): Promise<void> {
     const record = await this.repository.findLike(user, video);
     if (!(record instanceof Object)) {
       throw new BadRequestException(
@@ -56,15 +54,5 @@ export class VideoService {
       );
     }
     await this.repository.removeLike(user, video);
-  }
-
-  private async getVideoById(videoId: number): Promise<Video> {
-    const video = await this.repository.videoRepository.findOne({
-      id: videoId
-    });
-    if (!(video instanceof Object)) {
-      throw new BadRequestException('video.not_exists');
-    }
-    return video;
   }
 }

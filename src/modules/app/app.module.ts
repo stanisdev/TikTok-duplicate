@@ -8,12 +8,14 @@ import { AppController } from './app.controller';
 import { I18nModule, I18nJsonParser } from 'nestjs-i18n';
 import configuration from '../../config/configuration';
 import { join } from 'path';
+import { CommentModule } from '../comment/comment.module';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
     VideoModule,
+    CommentModule,
     TypeOrmModule.forRoot(configuration().db),
     ConfigModule.forRoot({
       load: [configuration],
