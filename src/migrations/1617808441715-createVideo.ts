@@ -6,7 +6,7 @@ export class createVideo1617808441715 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE videos (
-        "publicId" bigint UNIQUE NOT NULL PRIMARY KEY,
+        "id" bigint UNIQUE NOT NULL PRIMARY KEY,
         "userId" uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         caption varchar(150) NOT NULL,
         "availableFor" smallint DEFAULT 0,

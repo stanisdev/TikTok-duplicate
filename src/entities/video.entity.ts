@@ -21,10 +21,10 @@ export class Video {
   @PrimaryColumn()
   @Min(100000000000000)
   @Max(999999999999999)
-  publicId: number;
+  id: number;
 
   @ManyToOne(() => User, (user) => user.videos)
-  user
+  user: User;
 
   @Column()
   @MaxLength(150)

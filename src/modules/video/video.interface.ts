@@ -1,5 +1,5 @@
-export interface UloadedVideoResponse {
-  publicId: number,
+export interface UploadedVideoResponse {
+  id: number,
   userId: string,
   caption: string,
 }

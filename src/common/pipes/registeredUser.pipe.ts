@@ -8,7 +8,7 @@ import { User, UserStatus } from '../../entities/user.entity';
 import { getConnection } from 'typeorm';
 
 @Injectable()
-export class IsUserRegistered implements PipeTransform {
+export class RegisteredUserPipe implements PipeTransform {
   constructor () {}
 
   async transform(userId: string, metadata: ArgumentMetadata) {

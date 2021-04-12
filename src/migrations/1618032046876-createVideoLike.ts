@@ -7,7 +7,7 @@ export class createVideoLike1618032046876 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE video_likes (
         "userId" uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        "videoId" bigint NOT NULL REFERENCES videos("publicId") ON DELETE CASCADE,
+        "videoId" bigint NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
         PRIMARY KEY("userId", "videoId")
       );
 

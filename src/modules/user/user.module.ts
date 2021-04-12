@@ -18,7 +18,7 @@ import { UserServiceRepository } from './user.repository';
   providers: [
     UserService,
     AuthServiceRepository,
-    UserServiceRepository
+    UserServiceRepository,
   ],
 })
 export class UserModule {}

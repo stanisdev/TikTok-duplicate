@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { VideoController } from './video.controller';
 import { JwtModule } from '@nestjs/jwt';
@@ -6,13 +6,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../entities/user.entity';
 import { Code } from '../../entities/code.entity';
 import { Video } from 'src/entities/video.entity';
+import { VideoLike } from '../../entities/videoLike.entity';
 import { AuthServiceRepository } from '../auth/auth.repository';
 import { VideoServiceRepository } from './video.repository';
 
 @Module({
   imports: [
     JwtModule.register({}),
-    TypeOrmModule.forFeature([User, Code, Video]),
+    TypeOrmModule.forFeature([
+      User,
+      Code,
+      Video,
+      VideoLike
+    ]),
   ],
   controllers: [VideoController],
   providers: [
