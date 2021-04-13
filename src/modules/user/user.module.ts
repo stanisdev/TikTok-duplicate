@@ -8,10 +8,16 @@ import { UserService } from './user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthServiceRepository } from '../auth/auth.repository';
 import { UserServiceRepository } from './user.repository';
+import { Video } from 'src/entities/video.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Code, UserRelationship]),
+    TypeOrmModule.forFeature([
+      User,
+      Code,
+      UserRelationship,
+      Video,
+    ]),
     JwtModule.register({}),
   ],
   controllers: [UserController],

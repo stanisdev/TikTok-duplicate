@@ -46,6 +46,10 @@ export class Video {
   likes: VideoLike[];
 
   @Column()
+  @IsNumber()
+  likesCount: number;
+
+  @Column()
   @IsDate()
   createdAt: Date;
 }
