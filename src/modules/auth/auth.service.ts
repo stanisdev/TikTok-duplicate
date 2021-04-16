@@ -1,10 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { customAlphabet, nanoid } from 'nanoid/async';
 import { ConfigService } from '@nestjs/config';
 import { AuthServiceRepository } from './auth.repository';
 import { AuthTokens, AvailableUserFields, CodeLifetime } from './auth.interface';
 import { CompleteRegistrationDto, SignInDto, UpdateJwtTokensDto } from './auth.dto';
-import { UtilsService } from '../../../src/providers/utils.service';
+import { UtilsService } from '../../shared/providers/utils.service';
 import { CodeType } from '../../entities/code.entity';
 import { User, UserStatus } from '../../entities/user.entity';
 import { Code } from '../../entities/code.entity';

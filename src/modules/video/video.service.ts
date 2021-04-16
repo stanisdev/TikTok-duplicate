@@ -3,7 +3,7 @@ import { User } from 'src/entities/user.entity';
 import { Video } from 'src/entities/video.entity';
 import { UploadVideoDto } from './video.dto';
 import { VideoServiceRepository } from './video.repository';
-import { UtilsService } from '../../../src/providers/utils.service';
+import { UtilsService } from '../../shared/providers/utils.service';
 import { UploadedVideoResponse } from './video.interface';
 import { I18nRequestScopeService } from 'nestjs-i18n';
 

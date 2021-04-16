@@ -125,4 +125,20 @@ export class UserServiceRepository {
       .getMany();
     return records?.length == 2;
   }
+
+  async getUserVideos(
+    userId: string,
+    viewerType: ProfileViwerType,
+    limit: number,
+    offset: number,
+  ): Promise<Video[]> {
+    return this.videoRepository
+      .createQueryBuilder('v')
+      .select(['v.id', 'v.viewsCount'])
+      .where('v.userId = :userId', { userId })
+      .andWhere('v.availableFor <= :availableFor', { availableFor: viewerType })
+      .limit(limit)
+      .offset(offset)
+      .getMany();    
+  }
 }

@@ -1,8 +1,9 @@
-import { Controller, Get, Param, Request, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, Request, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { RegisteredUserPipe } from 'src/common/pipes/registeredUser.pipe';
-import { UserInfoResponse } from "./user.interface";
+import { UserInfoResponse, UserVideosResponse } from "./user.interface";
+import { UtilsService } from 'src/shared/providers/utils.service';
 
 @Controller('user')
 export class UserController {
@@ -35,5 +36,17 @@ export class UserController {
     @Request() { user: viewer }
   ): Promise<UserInfoResponse> {
     return this.userService.getUserInfo(viewer, username);
+  }
+
+  @Get(':userId/videos')
+  @UseGuards(AuthGuard)
+  async getUserVideos(
+    @Param('userId', new RegisteredUserPipe()) userId: string,
+    @Query('limit') limit: string,
+    @Query('page') page: string,
+    @Request() { user: viewer },
+  ): Promise<UserVideosResponse[]> {
+    const pagination = UtilsService.parsePagination(limit, page);
+    return this.userService.getUserVideos(userId, viewer, pagination);
   }
 }

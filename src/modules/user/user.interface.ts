@@ -9,3 +9,8 @@ export enum ProfileViwerType {
   FRIEND = 1,
   OWNER = 2,
 }
+
+export interface UserVideosResponse {
+  id: number,
+  viewsCount: number,
+}

@@ -1,18 +1,25 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserServiceRepository } from './user.repository';
 import { I18nRequestScopeService } from 'nestjs-i18n';
+import { ConfigService } from '@nestjs/config';
 import {
   UserRelationshipType,
   UserRelationship
 } from '../../entities/userRelationship.entity';
 import { User } from 'src/entities/user.entity';
-import { ProfileViwerType, UserInfoResponse } from './user.interface';
+import {
+  ProfileViwerType,
+  UserInfoResponse,
+  UserVideosResponse
+} from './user.interface';
+import { Pagination } from 'src/shared/interfaces/general.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly repository: UserServiceRepository,
     private readonly i18n: I18nRequestScopeService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -71,18 +78,7 @@ export class UserService {
         await this.i18n.t('auth.user_not_found')
       )
     }
-    /**
-     * Define type of the viewer
-     */
-    let viewerType;
-    if (viewer.id == user.id) {
-      viewerType = ProfileViwerType.OWNER;
-    } else if (await repository.doesFriendshipExist(user.id, viewer.id)) {
-      viewerType = ProfileViwerType.FRIEND;
-    } else {
-      viewerType = ProfileViwerType.GUEST;
-    }
-
+    const viewerType = await this.getViewerType(viewer.id, user.id);
     /**
      * Determine amount of likes, followings and
      * followers
@@ -97,5 +93,61 @@ export class UserService {
       followers,
       likes,
     };
+  }
+
+  /**
+   * Get list of user's videos
+   */
+  async getUserVideos(
+    userId: string,
+    viewer: User,
+    pagination: Pagination,
+  ): Promise<UserVideosResponse[]> {
+    const limitConfig = {
+      default: + this.configService
+        .get<string>('pagination.videos.limit.default'),
+      max: + this.configService
+        .get<string>('pagination.videos.limit.max'),
+    };
+    let page = pagination.page;
+    let limit = pagination.limit;
+
+    if (pagination.page < 0) {
+      page = 0;
+    }
+    if (pagination.limit < 1) {
+      limit = limitConfig.default;
+    }
+    if (pagination.limit > limitConfig.max) {
+      limit = limitConfig.max;
+    }
+    const offset = limit * page;
+    const viewerType = await this.getViewerType(viewer.id, userId);
+    const videos = await this.repository.getUserVideos(
+      userId,
+      viewerType,
+      limit,
+      offset
+    );
+    return videos.map(v => ({
+      id: + v.id,
+      viewsCount: v.viewsCount,
+    }));
+  }
+
+  /**
+   * Determine the relationship between a viewer and
+   * the owner of being viewed profile
+   */
+  async getViewerType(viewerId: string, userId: string): Promise<ProfileViwerType> {
+    if (viewerId == userId) {
+      return ProfileViwerType.OWNER;
+    } else if (
+      await this.repository.doesFriendshipExist(userId, viewerId)
+    ) {
+      return ProfileViwerType.FRIEND;
+    } else {
+      return ProfileViwerType.GUEST;
+    }
   }
 }

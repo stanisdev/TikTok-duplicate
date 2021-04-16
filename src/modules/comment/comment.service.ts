@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UtilsService } from '../../../src/providers/utils.service';
+import { UtilsService } from '../../shared/providers/utils.service';
 import { CommentServiceRepository } from './comment.repository';
 import { CreateCommentOptions } from './comment.interface';
 

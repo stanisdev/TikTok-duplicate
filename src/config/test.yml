@@ -21,3 +21,9 @@ auth:
 
 dirs:
   src: 'not defined'
+
+pagination:
+  videos:
+    limit:
+      default: 20
+      max: 50
