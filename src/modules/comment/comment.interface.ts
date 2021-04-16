@@ -1,10 +1,10 @@
-import { User } from "src/entities/user.entity";
-import { Video } from "src/entities/video.entity";
+import { User } from '../../entities/user.entity';
+import { Video } from '../../entities/video.entity';
 
 export interface CreateCommentOptions {
-  id?: number,
-  user: User,
-  video: Video,
-  content: string,
-  parentCommentId: number,
+  id?: number;
+  user: User;
+  video: Video;
+  content: string;
+  parentCommentId: number;
 }

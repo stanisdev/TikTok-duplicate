@@ -1,8 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Video, VideoAvailableFor } from '../../entities/video.entity';
-import { User } from '../../entities/user.entity';
-import { VideoLike } from '../../entities/videoLike.entity';
+import {
+  VideoLike,
+  Video,
+  VideoAvailableFor,
+  User,
+} from '../../entities';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -12,7 +15,7 @@ export class VideoServiceRepository {
     public readonly videoRepository: Repository<Video>,
 
     @InjectRepository(VideoLike)
-    public readonly videoLikeRepository: Repository<VideoLike>
+    public readonly videoLikeRepository: Repository<VideoLike>,
   ) {}
 
   createVideo(
@@ -22,7 +25,7 @@ export class VideoServiceRepository {
     availableFor: VideoAvailableFor,
     allowUser: number[],
   ): Promise<Video> {
-    const video = new Video()
+    const video = new Video();
     video.id = id;
     video.user = user;
     video.caption = caption;
@@ -41,7 +44,8 @@ export class VideoServiceRepository {
   }
 
   findLike(user: User, video: Video): Promise<Video> {
-    return this.videoLikeRepository.createQueryBuilder()
+    return this.videoLikeRepository
+      .createQueryBuilder()
       .where('"userId" = :userId', { userId: user.id })
       .select(['"userId"', '"videoId"'])
       .andWhere('"videoId" = :videoId', { videoId: video.id })

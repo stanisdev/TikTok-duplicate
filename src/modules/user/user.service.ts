@@ -1,18 +1,18 @@
+import { Pagination } from '../../shared/interfaces/general.interface';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserServiceRepository } from './user.repository';
 import { I18nRequestScopeService } from 'nestjs-i18n';
 import { ConfigService } from '@nestjs/config';
 import {
   UserRelationshipType,
-  UserRelationship
-} from '../../entities/userRelationship.entity';
-import { User } from 'src/entities/user.entity';
+  UserRelationship,
+  User,
+} from '../../entities';
 import {
   ProfileViwerType,
   UserInfoResponse,
-  UserVideosResponse
+  UserVideosResponse,
 } from './user.interface';
-import { Pagination } from 'src/shared/interfaces/general.interface';
 
 @Injectable()
 export class UserService {
@@ -28,7 +28,7 @@ export class UserService {
   async follow(followerId: string, followingId: string): Promise<void> {
     if (followerId == followingId) {
       throw new BadRequestException(
-        await this.i18n.t('user.do_not_follow_by_yourself')
+        await this.i18n.t('user.do_not_follow_by_yourself'),
       );
     }
     const record = await this.repository.findRelationship(
@@ -56,9 +56,7 @@ export class UserService {
       UserRelationshipType.FOLLOWING,
     );
     if (!(record instanceof UserRelationship)) {
-      throw new BadRequestException(
-        await this.i18n.t('user.cannot_unfollow')
-      );
+      throw new BadRequestException(await this.i18n.t('user.cannot_unfollow'));
     }
     await this.repository.userRelationshipRepository.delete(record);
   }
@@ -66,17 +64,12 @@ export class UserService {
   /**
    * Get breif information about a user
    */
-  async getUserInfo(
-    viewer: User,
-    username: string
-  ): Promise<UserInfoResponse> {
+  async getUserInfo(viewer: User, username: string): Promise<UserInfoResponse> {
     const { repository } = this;
 
     const user = await repository.findUserByUsername(username);
     if (!(user instanceof Object)) {
-      throw new BadRequestException(
-        await this.i18n.t('auth.user_not_found')
-      )
+      throw new BadRequestException(await this.i18n.t('auth.user_not_found'));
     }
     const viewerType = await this.getViewerType(viewer.id, user.id);
     /**
@@ -104,10 +97,10 @@ export class UserService {
     pagination: Pagination,
   ): Promise<UserVideosResponse[]> {
     const limitConfig = {
-      default: + this.configService
-        .get<string>('pagination.videos.limit.default'),
-      max: + this.configService
-        .get<string>('pagination.videos.limit.max'),
+      default: +this.configService.get<string>(
+        'pagination.videos.limit.default',
+      ),
+      max: +this.configService.get<string>('pagination.videos.limit.max'),
     };
     let page = pagination.page;
     let limit = pagination.limit;
@@ -127,10 +120,10 @@ export class UserService {
       userId,
       viewerType,
       limit,
-      offset
+      offset,
     );
-    return videos.map(v => ({
-      id: + v.id,
+    return videos.map((v) => ({
+      id: +v.id,
       viewsCount: v.viewsCount,
     }));
   }
@@ -139,12 +132,13 @@ export class UserService {
    * Determine the relationship between a viewer and
    * the owner of being viewed profile
    */
-  async getViewerType(viewerId: string, userId: string): Promise<ProfileViwerType> {
+  async getViewerType(
+    viewerId: string,
+    userId: string,
+  ): Promise<ProfileViwerType> {
     if (viewerId == userId) {
       return ProfileViwerType.OWNER;
-    } else if (
-      await this.repository.doesFriendshipExist(userId, viewerId)
-    ) {
+    } else if (await this.repository.doesFriendshipExist(userId, viewerId)) {
       return ProfileViwerType.FRIEND;
     } else {
       return ProfileViwerType.GUEST;

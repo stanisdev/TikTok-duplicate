@@ -5,7 +5,7 @@ export enum UserRelationshipType {
   FOLLOWING = 0,
   FOLLOWER = 1,
   BLOCKED = 2,
-};
+}
 
 @Entity('user_relationships')
 export class UserRelationship {
@@ -15,7 +15,7 @@ export class UserRelationship {
   @Column()
   @IsUUID(4)
   activeUserId: string;
-  
+
   @Column()
   @IsUUID(4)
   exposedUserId: string;

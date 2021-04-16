@@ -3,8 +3,7 @@ import * as faker from 'faker';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../src/modules/app/app.module';
 import { getConnection } from 'typeorm';
-import { User } from '../../src/entities/user.entity';
-import { Code } from '../../src/entities/code.entity';
+import { User, Code } from '../../src/entities';
 
 describe('Auth', () => {
   let app;

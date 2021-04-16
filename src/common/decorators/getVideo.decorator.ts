@@ -1,7 +1,7 @@
 import {
   BadRequestException,
   createParamDecorator,
-  ExecutionContext
+  ExecutionContext,
 } from '@nestjs/common';
 import { Video } from '../../entities/video.entity';
 import { getConnection } from 'typeorm';
@@ -15,7 +15,7 @@ export const GetVideo = createParamDecorator(
       .findOne(request.params.videoId);
     if (!(video instanceof Object)) {
       throw new BadRequestException(
-        await request.i18nService.t('video.not_exists')
+        await request.i18nService.t('video.not_exists'),
       );
     }
     return video;

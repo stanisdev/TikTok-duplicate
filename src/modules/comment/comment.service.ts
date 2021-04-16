@@ -5,15 +5,13 @@ import { CreateCommentOptions } from './comment.interface';
 
 @Injectable()
 export class CommentService {
-  constructor(
-    private readonly repository: CommentServiceRepository,
-  ) {}
+  constructor(private readonly repository: CommentServiceRepository) {}
 
   async add(options: CreateCommentOptions) {
-    const id = + await UtilsService.generateRandomString({
+    const id = +(await UtilsService.generateRandomString({
       length: 15,
       onlyDigits: true,
-    });
+    }));
     await this.repository.createComment({
       id,
       user: options.user,

@@ -4,7 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   MaxLength,
-  MinLength
+  MinLength,
 } from 'class-validator';
 
 export class UploadVideoDto {

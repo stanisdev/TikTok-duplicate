@@ -6,12 +6,12 @@ import {
   Request,
   Get,
 } from '@nestjs/common';
-import { AuthGuard } from 'src/common/guards/auth.guard';
+import { AuthGuard } from '../../common/guards/auth.guard';
 import { UploadVideoDto } from './video.dto';
 import { VideoService } from './video.service';
 import { UploadedVideoResponse } from './video.interface';
-import { GetVideo } from 'src/common/decorators/getVideo.decorator';
-import { Video } from 'src/entities/video.entity';
+import { GetVideo } from '../../common/decorators/getVideo.decorator';
+import { Video } from '../../entities/video.entity';
 
 @Controller('video')
 export class VideoController {
@@ -21,17 +21,14 @@ export class VideoController {
   @UseGuards(AuthGuard)
   async upload(
     @Body() dto: UploadVideoDto,
-    @Request() { user }
+    @Request() { user },
   ): Promise<UploadedVideoResponse> {
     return this.videoService.upload(dto, user);
   }
 
   @Get(':videoId/like')
   @UseGuards(AuthGuard)
-  async like(
-    @Request() { user },
-    @GetVideo() video: Video,
-  ): Promise<void> {
+  async like(@Request() { user }, @GetVideo() video: Video): Promise<void> {
     await this.videoService.like(user, video);
   }
 

@@ -1,5 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthServiceRepository } from '../../modules/auth/auth.repository';
 import { UserStatus } from '../../entities/user.entity';
@@ -14,7 +19,7 @@ export class AuthGuard implements CanActivate {
     private configService: ConfigService,
     private repository: AuthServiceRepository,
   ) {
-    this.jwtSecret = this.configService.get<string>('auth.jwt.secret')
+    this.jwtSecret = this.configService.get<string>('auth.jwt.secret');
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -27,8 +32,9 @@ export class AuthGuard implements CanActivate {
     }
     let decrypted;
     try {
-      decrypted = await this.jwtService
-        .verifyAsync(token, { secret: this.jwtSecret });
+      decrypted = await this.jwtService.verifyAsync(token, {
+        secret: this.jwtSecret,
+      });
     } catch {
       return false;
     }

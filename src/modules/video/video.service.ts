@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
-import { Video } from 'src/entities/video.entity';
+import { User, Video } from '../../entities';
 import { UploadVideoDto } from './video.dto';
 import { VideoServiceRepository } from './video.repository';
 import { UtilsService } from '../../shared/providers/utils.service';
@@ -16,12 +15,12 @@ export class VideoService {
 
   async upload(
     dto: UploadVideoDto,
-    user: User
+    user: User,
   ): Promise<UploadedVideoResponse> {
-    const id = + await UtilsService.generateRandomString({
+    const id = +(await UtilsService.generateRandomString({
       length: 15,
       onlyDigits: true,
-    });
+    }));
     await this.repository.createVideo(
       id,
       user,
@@ -33,15 +32,13 @@ export class VideoService {
       id,
       userId: user.id,
       caption: dto.caption,
-    }
+    };
   }
 
   async like(user: User, video: Video): Promise<void> {
     const record = await this.repository.findLike(user, video);
     if (record instanceof Object) {
-      throw new BadRequestException(
-        await this.i18n.t('video.already_liked'),
-      );
+      throw new BadRequestException(await this.i18n.t('video.already_liked'));
     }
     await this.repository.createLike(user, video);
   }

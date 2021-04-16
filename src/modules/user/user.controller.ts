@@ -1,21 +1,26 @@
-import { Controller, Get, Param, Query, Request, UseGuards } from "@nestjs/common";
-import { UserService } from "./user.service";
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { UserService } from './user.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
-import { RegisteredUserPipe } from 'src/common/pipes/registeredUser.pipe';
-import { UserInfoResponse, UserVideosResponse } from "./user.interface";
-import { UtilsService } from 'src/shared/providers/utils.service';
+import { RegisteredUserPipe } from '../../common/pipes/registeredUser.pipe';
+import { UserInfoResponse, UserVideosResponse } from './user.interface';
+import { UtilsService } from '../../shared/providers/utils.service';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get(':userId/follow')
   @UseGuards(AuthGuard)
   async follow(
     @Param('userId', new RegisteredUserPipe()) followingId: string,
-    @Request() { user }
+    @Request() { user },
   ): Promise<void> {
     await this.userService.follow(user.id, followingId);
   }
@@ -24,7 +29,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   async unfollow(
     @Param('userId') unfollowingId: string,
-    @Request() { user }
+    @Request() { user },
   ): Promise<void> {
     await this.userService.unfollow(user.id, unfollowingId);
   }
@@ -33,7 +38,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   async userInfo(
     @Param('username') username: string,
-    @Request() { user: viewer }
+    @Request() { user: viewer },
   ): Promise<UserInfoResponse> {
     return this.userService.getUserInfo(viewer, username);
   }

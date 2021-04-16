@@ -5,7 +5,7 @@ import {
   IsNumber,
   IsPositive,
   Min,
-  Max
+  Max,
 } from 'class-validator';
 import { User } from './user.entity';
 import { VideoLike } from './videoLike.entity';
@@ -42,7 +42,7 @@ export class Video {
   @IsNumber()
   viewsCount: number;
 
-  @OneToMany(() => VideoLike, like => like.video)
+  @OneToMany(() => VideoLike, (like) => like.video)
   likes: VideoLike[];
 
   @Column()

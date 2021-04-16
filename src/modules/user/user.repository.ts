@@ -1,21 +1,20 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   UserRelationship,
-  UserRelationshipType
-} from '../../entities/userRelationship.entity';
-import { User } from '../../entities/user.entity';
-import { Video } from '../../entities/video.entity';
+  UserRelationshipType,
+  User,
+  Video
+} from '../../entities';
 import { Repository } from 'typeorm';
 import { Brackets } from 'typeorm';
-import { ProfileViwerType } from "./user.interface";
+import { ProfileViwerType } from './user.interface';
 
 @Injectable()
 export class UserServiceRepository {
   constructor(
     @InjectRepository(UserRelationship)
-    public readonly userRelationshipRepository: 
-      Repository<UserRelationship>,
+    public readonly userRelationshipRepository: Repository<UserRelationship>,
 
     @InjectRepository(User)
     public readonly userRepository: Repository<User>,
@@ -47,7 +46,7 @@ export class UserServiceRepository {
         activeUserId,
         exposedUserId,
         type,
-      }
+      },
     });
   }
 
@@ -55,7 +54,7 @@ export class UserServiceRepository {
     return this.userRepository.findOne({
       where: {
         username,
-      }
+      },
     });
   }
 
@@ -96,7 +95,9 @@ export class UserServiceRepository {
     const { sum } = await this.videoRepository
       .createQueryBuilder('video')
       .select('SUM("likesCount")', 'sum')
-      .where('video.availableFor <= :availableFor', { availableFor: viewerType })
+      .where('video.availableFor <= :availableFor', {
+        availableFor: viewerType,
+      })
       .andWhere('video.userId = :userId', { userId: user.id })
       .getRawOne();
     return +sum;
@@ -104,24 +105,28 @@ export class UserServiceRepository {
 
   async doesFriendshipExist(
     userId: string,
-    viewerId: string
+    viewerId: string,
   ): Promise<boolean> {
     const records = await this.userRelationshipRepository
       .createQueryBuilder('ur')
-      .where(new Brackets(qb => {
-        qb.where('ur.activeUserId = :u1', { u1: userId })
-          .andWhere('ur.exposedUserId = :u2', { u2: viewerId })
-          .andWhere('ur.type = :type', {
-            type: UserRelationshipType.FOLLOWING,
-          })
-      }))
-      .orWhere(new Brackets(qb => {
-        qb.where('ur.exposedUserId = :u3', { u3: userId })
-          .andWhere('ur.activeUserId = :u4', { u4: viewerId })
-          .andWhere('ur.type = :type', { 
-            type: UserRelationshipType.FOLLOWING,
-          })
-      }))
+      .where(
+        new Brackets((qb) => {
+          qb.where('ur.activeUserId = :u1', { u1: userId })
+            .andWhere('ur.exposedUserId = :u2', { u2: viewerId })
+            .andWhere('ur.type = :type', {
+              type: UserRelationshipType.FOLLOWING,
+            });
+        }),
+      )
+      .orWhere(
+        new Brackets((qb) => {
+          qb.where('ur.exposedUserId = :u3', { u3: userId })
+            .andWhere('ur.activeUserId = :u4', { u4: viewerId })
+            .andWhere('ur.type = :type', {
+              type: UserRelationshipType.FOLLOWING,
+            });
+        }),
+      )
       .getMany();
     return records?.length == 2;
   }
@@ -139,6 +144,6 @@ export class UserServiceRepository {
       .andWhere('v.availableFor <= :availableFor', { availableFor: viewerType })
       .limit(limit)
       .offset(offset)
-      .getMany();    
+      .getMany();
   }
 }

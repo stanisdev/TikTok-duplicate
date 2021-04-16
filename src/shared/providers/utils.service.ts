@@ -14,8 +14,8 @@ export class UtilsService {
   }
 
   static async generateRandomString(options: {
-    length: number,
-    onlyDigits?: boolean
+    length: number;
+    onlyDigits?: boolean;
   }): Promise<string> {
     if (options.onlyDigits) {
       return await customAlphabet('1234567890', options.length)();

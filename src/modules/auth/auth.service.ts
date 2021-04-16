@@ -1,11 +1,24 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthServiceRepository } from './auth.repository';
-import { AuthTokens, AvailableUserFields, CodeLifetime } from './auth.interface';
-import { CompleteRegistrationDto, SignInDto, UpdateJwtTokensDto } from './auth.dto';
+import {
+  AuthTokens,
+  AvailableUserFields,
+  CodeLifetime,
+} from './auth.interface';
+import {
+  CompleteRegistrationDto,
+  SignInDto,
+  UpdateJwtTokensDto,
+} from './auth.dto';
 import { UtilsService } from '../../shared/providers/utils.service';
 import { CodeType } from '../../entities/code.entity';
-import { User, UserStatus } from '../../entities/user.entity';
+import { User, UserStatus } from '../../entities';
 import { Code } from '../../entities/code.entity';
 import { JwtService } from '@nestjs/jwt';
 import { I18nRequestScopeService } from 'nestjs-i18n';
@@ -29,8 +42,7 @@ export class AuthService {
       amount: Number.parseInt(count),
       unit,
     };
-    this.jwtSecret = this.configService
-      .get<string>('auth.jwt.secret');
+    this.jwtSecret = this.configService.get<string>('auth.jwt.secret');
   }
 
   /**
@@ -44,7 +56,7 @@ export class AuthService {
     }
     await this.createInitialUser(phone);
     return {
-      message: await this.i18n.t('auth.confirm_code_sended')
+      message: await this.i18n.t('auth.confirm_code_sended'),
     };
   }
 
@@ -56,7 +68,7 @@ export class AuthService {
     const user = await this.repository.createInitialUser(phone);
     const code = await UtilsService.generateRandomString({
       length: 5,
-      onlyDigits: true
+      onlyDigits: true,
     });
     await this.repository.createCode(
       user,
@@ -83,7 +95,7 @@ export class AuthService {
       await this.repository.removeAllSmsCodes(user);
       const code = await UtilsService.generateRandomString({
         length: 5,
-        onlyDigits: true
+        onlyDigits: true,
       });
 
       await this.repository.createCode(
@@ -96,7 +108,7 @@ export class AuthService {
       return false;
     } else {
       throw new BadRequestException(
-        await this.i18n.t('auth.phone_number_exists')
+        await this.i18n.t('auth.phone_number_exists'),
       );
     }
   }
@@ -112,7 +124,7 @@ export class AuthService {
       Date.now() > new Date(record.expireAt).getTime()
     ) {
       throw new BadRequestException(
-        await this.i18n.t('auth.wrong_confirmation_code')
+        await this.i18n.t('auth.wrong_confirmation_code'),
       );
     }
     /**
@@ -139,13 +151,11 @@ export class AuthService {
     const user = await this.repository.userRepository.findOne(userId);
 
     if (user?.status != UserStatus.PHONE_CONFIRMED) {
-      throw new BadRequestException(
-        await this.i18n.t('auth.user_not_found')
-      );
+      throw new BadRequestException(await this.i18n.t('auth.user_not_found'));
     }
     if (await this.repository.doesUsernameExist(username)) {
       throw new BadRequestException(
-        await this.i18n.t('auth.username_registered')
+        await this.i18n.t('auth.username_registered'),
       );
     }
     user.username = username;
@@ -181,9 +191,7 @@ export class AuthService {
   /**
    * Create access and appropriate refresh token
    */
-  private async createAccessAndRefreshTokens(
-    user: User
-  ): Promise<AuthTokens> {
+  private async createAccessAndRefreshTokens(user: User): Promise<AuthTokens> {
     const [accessToken, codeRecord] = await this.createJwtToken(
       user,
       CodeType.JWT_ACCESS,
@@ -194,7 +202,7 @@ export class AuthService {
       CodeType.JWT_REFRESH,
       'auth.jwt.tokenLifetime.refresh',
       codeRecord.id,
-    )
+    );
     return { accessToken, refreshToken };
   }
 
@@ -225,7 +233,7 @@ export class AuthService {
     const token = await this.jwtService.signAsync(payload, {
       secret: this.jwtSecret,
       expiresIn,
-    })
+    });
     return [token, codeRecord];
   }
 
@@ -234,9 +242,13 @@ export class AuthService {
    * available to be public
    */
   getUserInfo(user: User): AvailableUserFields {
-    return lodash.pick(
-      user, ['id', 'phone', 'username', 'status', 'createdAt']
-    );
+    return lodash.pick(user, [
+      'id',
+      'phone',
+      'username',
+      'status',
+      'createdAt',
+    ]);
   }
 
   /**
@@ -258,8 +270,9 @@ export class AuthService {
   async updateJwtTokens(dto: UpdateJwtTokensDto): Promise<AuthTokens> {
     let decrypted;
     try {
-      decrypted = await this.jwtService
-        .verifyAsync(dto.refreshToken, { secret: this.jwtSecret });
+      decrypted = await this.jwtService.verifyAsync(dto.refreshToken, {
+        secret: this.jwtSecret,
+      });
     } catch {
       throw new ForbiddenException();
     }

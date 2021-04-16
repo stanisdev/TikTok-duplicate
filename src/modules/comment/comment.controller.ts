@@ -1,13 +1,7 @@
-import {
-  Controller,
-  Post,
-  UseGuards,
-  Request,
-  Body,
-} from '@nestjs/common';
-import { GetVideo } from 'src/common/decorators/getVideo.decorator';
-import { AuthGuard } from 'src/common/guards/auth.guard';
-import { Video } from 'src/entities/video.entity';
+import { Controller, Post, UseGuards, Request, Body } from '@nestjs/common';
+import { GetVideo } from '../../common/decorators/getVideo.decorator';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { Video } from '../../entities/video.entity';
 import { AddCommentDto } from './comment.dto';
 import { CommentService } from './comment.service';
 
@@ -26,7 +20,7 @@ export class CommentController {
       user,
       video,
       content: dto.content,
-      parentCommentId: dto.parentCommentId
+      parentCommentId: dto.parentCommentId,
     });
   }
 }

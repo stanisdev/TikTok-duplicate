@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CodeLifetime } from './auth.interface';
-import { User, UserStatus } from '../../../src/entities/user.entity';
-import { Code } from '../../../src/entities/code.entity';
+import { User, UserStatus, Code } from '../../entities';
 import { nanoid } from 'nanoid/async';
 import * as moment from 'moment';
 
@@ -90,7 +89,7 @@ export class AuthServiceRepository {
       .createQueryBuilder()
       .delete()
       .where('userId = :userId', { userId })
-      .andWhere("type IN (:...types)", { types })
+      .andWhere('type IN (:...types)', { types })
       .execute();
   }
 }

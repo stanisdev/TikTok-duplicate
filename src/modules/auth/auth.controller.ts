@@ -1,4 +1,12 @@
-import { Body, Query, Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
+import {
+  Body,
+  Query,
+  Controller,
+  Request,
+  Post,
+  UseGuards,
+  Get,
+} from '@nestjs/common';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import {
   RegisterPhoneDto,
@@ -25,7 +33,7 @@ export class AuthController {
 
   @Post('confirm_phone')
   async confirmPhone(
-    @Body() { code }: ConfirmPhoneDto
+    @Body() { code }: ConfirmPhoneDto,
   ): Promise<ConfirmPhoneResponse> {
     const userId = await this.authService.confirmPhone(code);
     return { userId };
@@ -33,7 +41,7 @@ export class AuthController {
 
   @Post('complete_registration')
   async completeRegistration(
-    @Body() dto: CompleteRegistrationDto
+    @Body() dto: CompleteRegistrationDto,
   ): Promise<void> {
     await this.authService.completeRegistration(dto);
   }
@@ -59,9 +67,7 @@ export class AuthController {
   }
 
   @Post('update_tokens')
-  async updateTokens(
-    @Body() dto: UpdateJwtTokensDto
-  ): Promise<AuthTokens> {
+  async updateTokens(@Body() dto: UpdateJwtTokensDto): Promise<AuthTokens> {
     return this.authService.updateJwtTokens(dto);
   }
 }

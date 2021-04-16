@@ -2,14 +2,14 @@ import {
   ArgumentMetadata,
   BadRequestException,
   Injectable,
-  PipeTransform
+  PipeTransform,
 } from '@nestjs/common';
 import { User, UserStatus } from '../../entities/user.entity';
 import { getConnection } from 'typeorm';
 
 @Injectable()
 export class RegisteredUserPipe implements PipeTransform {
-  constructor () {}
+  constructor() {}
 
   async transform(userId: string, metadata: ArgumentMetadata) {
     const user = await getConnection().getRepository(User).findOne(userId);

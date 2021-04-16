@@ -1,7 +1,7 @@
 export interface UserInfoResponse {
-  following: number,
-  followers: number,
-  likes: number,
+  following: number;
+  followers: number;
+  likes: number;
 }
 
 export enum ProfileViwerType {
@@ -11,6 +11,6 @@ export enum ProfileViwerType {
 }
 
 export interface UserVideosResponse {
-  id: number,
-  viewsCount: number,
+  id: number;
+  viewsCount: number;
 }
