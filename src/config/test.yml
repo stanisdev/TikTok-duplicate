@@ -8,7 +8,7 @@ db:
   autoLoadEntities: true
   synchronize: false
   logging: false
-  entities: ['dist/**/*.entity{.ts,.js}']
+  entities: ['dist/src/entities/index.ts']
   keepConnectionAlive: true
 
 auth:
