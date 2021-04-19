@@ -12,13 +12,17 @@ import { VideoService } from './video.service';
 import { UploadedVideoResponse } from './video.interface';
 import { GetVideo } from '../../common/decorators/getVideo.decorator';
 import { Video } from '../../entities/video.entity';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('video')
+@ApiBearerAuth()
 @Controller('video')
+@UseGuards(AuthGuard)
 export class VideoController {
   constructor(private readonly videoService: VideoService) {}
 
   @Post('upload')
-  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Upload a video' })
   async upload(
     @Body() dto: UploadVideoDto,
     @Request() { user },
@@ -27,13 +31,15 @@ export class VideoController {
   }
 
   @Get(':videoId/like')
-  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Like video' })
   async like(@Request() { user }, @GetVideo() video: Video): Promise<void> {
     await this.videoService.like(user, video);
   }
 
   @Get(':videoId/remove_like')
-  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Сhange mind and remove "like" at the previously liked video',
+  })
   async removeLike(
     @Request() { user },
     @GetVideo() video: Video,

@@ -1,18 +1,18 @@
-import { VideoAvailableFor } from "src/entities";
+import { VideoAvailableFor } from 'src/entities';
 
 export interface UserFixture {
-  phone: string,
-  username: string,
-  encryptedPassword: string,
-  decryptedPassword: string,
-  salt: string,
-  status: number,
-};
+  phone: string;
+  username: string;
+  encryptedPassword: string;
+  decryptedPassword: string;
+  salt: string;
+  status: number;
+}
 
 export interface VideoFixture {
-  id: number,
-  caption: string,
-  availableFor: VideoAvailableFor,
-  allowUser: number[],
-  likesCount: number,
-};
+  id: number;
+  caption: string;
+  availableFor: VideoAvailableFor;
+  allowUser: number[];
+  likesCount: number;
+}

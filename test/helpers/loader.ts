@@ -3,15 +3,13 @@ import {
   Video,
   VideoLike,
   UserRelationship,
-  UserRelationshipType
+  UserRelationshipType,
 } from '../../src/entities';
 import { Connection } from 'typeorm';
 import { UserFixture, VideoFixture } from './interfaces';
 
 export class Loader {
-  constructor(
-    private db: Connection,
-  ) {}
+  constructor(private db: Connection) {}
 
   createUser(fixture: UserFixture): Promise<User> {
     const user = new User();

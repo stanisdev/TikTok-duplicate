@@ -20,10 +20,20 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
   ): Observable<Response<T>> {
     return next.handle().pipe(
       map((data) => {
-        return {
-          ok: true,
-          data,
-        };
+        let result;
+        if (typeof data == 'string') {
+          result = {
+            ok: true,
+            message: data,
+            data: {},
+          };
+        } else {
+          result = {
+            ok: true,
+            data,
+          };
+        }
+        return result;
       }),
     );
   }

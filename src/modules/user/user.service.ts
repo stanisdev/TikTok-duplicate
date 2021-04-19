@@ -3,11 +3,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserServiceRepository } from './user.repository';
 import { I18nRequestScopeService } from 'nestjs-i18n';
 import { ConfigService } from '@nestjs/config';
-import {
-  UserRelationshipType,
-  UserRelationship,
-  User,
-} from '../../entities';
+import { UserRelationshipType, UserRelationship, User } from '../../entities';
 import {
   ProfileViwerType,
   UserInfoResponse,

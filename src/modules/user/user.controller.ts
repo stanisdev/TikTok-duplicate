@@ -11,13 +11,17 @@ import { AuthGuard } from '../../common/guards/auth.guard';
 import { RegisteredUserPipe } from '../../common/pipes/registeredUser.pipe';
 import { UserInfoResponse, UserVideosResponse } from './user.interface';
 import { UtilsService } from '../../shared/providers/utils.service';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('user')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get(':userId/follow')
-  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Follow to a user' })
   async follow(
     @Param('userId', new RegisteredUserPipe()) followingId: string,
     @Request() { user },
@@ -26,7 +30,7 @@ export class UserController {
   }
 
   @Get(':userId/unfollow')
-  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Unfollow a user' })
   async unfollow(
     @Param('userId') unfollowingId: string,
     @Request() { user },
@@ -35,7 +39,7 @@ export class UserController {
   }
 
   @Get(':username')
-  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: "Get the most essential user's information" })
   async userInfo(
     @Param('username') username: string,
     @Request() { user: viewer },
@@ -44,7 +48,7 @@ export class UserController {
   }
 
   @Get(':userId/videos')
-  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: "Navigate available user's videos" })
   async getUserVideos(
     @Param('userId', new RegisteredUserPipe()) userId: string,
     @Query('limit') limit: string,

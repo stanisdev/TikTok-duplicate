@@ -50,14 +50,10 @@ export class AuthService {
    */
   async registerPhoneNumber(phone: string) {
     if (!(await this.shouldRegisterPhone(phone))) {
-      return {
-        message: await this.i18n.t('auth.new_confirm_code_sended'),
-      };
+      return this.i18n.t('auth.new_confirm_code_sended');
     }
     await this.createInitialUser(phone);
-    return {
-      message: await this.i18n.t('auth.confirm_code_sended'),
-    };
+    return this.i18n.t('auth.confirm_code_sended');
   }
 
   /**

@@ -1,6 +1,7 @@
 import * as faker from 'faker';
 
-const encryptedPassword = '$2b$10$v3Iiw3EtuE.fJOUDZ3j8deTI1AIdROrVv0OE9F.PtNWhvGisF29i2';
+const encryptedPassword =
+  '$2b$10$v3Iiw3EtuE.fJOUDZ3j8deTI1AIdROrVv0OE9F.PtNWhvGisF29i2';
 const decryptedPassword = 'wg0434ko2';
 const salt = 'lA304';
 

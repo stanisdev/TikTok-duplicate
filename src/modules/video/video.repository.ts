@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  VideoLike,
-  Video,
-  VideoAvailableFor,
-  User,
-} from '../../entities';
+import { VideoLike, Video, VideoAvailableFor, User } from '../../entities';
 import { Repository } from 'typeorm';
 
 @Injectable()

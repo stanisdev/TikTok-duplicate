@@ -4,7 +4,7 @@ import {
   UserRelationship,
   UserRelationshipType,
   User,
-  Video
+  Video,
 } from '../../entities';
 import { Repository } from 'typeorm';
 import { Brackets } from 'typeorm';

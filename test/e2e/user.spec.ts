@@ -38,60 +38,87 @@ describe('User', () => {
       loader.createVideo(viewer, videoFixtures.naturePublic),
       loader.createVideo(viewer, videoFixtures.waterfallForFriends),
       loader.createVideo(viewer, videoFixtures.moonPrivate),
-      loader.createRelationship(follower, viewer, UserRelationshipType.FOLLOWING),
-      loader.createRelationship(viewer, following, UserRelationshipType.FOLLOWING),
-      loader.createRelationship(following, viewer, UserRelationshipType.FOLLOWING),
+      loader.createRelationship(
+        follower,
+        viewer,
+        UserRelationshipType.FOLLOWING,
+      ),
+      loader.createRelationship(
+        viewer,
+        following,
+        UserRelationshipType.FOLLOWING,
+      ),
+      loader.createRelationship(
+        following,
+        viewer,
+        UserRelationshipType.FOLLOWING,
+      ),
     ]);
   });
 
   describe('GET /user/:username', () => {
-    it('should get info about the user if ' +
-      'the viewer is the owner of the profile', async () => {
-      const { body: { accessToken } } = await request(server).post('/auth/sign_in').send({
-        username: userFixtures.viewer.username,
-        password: userFixtures.viewer.decryptedPassword,
-      });
-      const { status, body } = await request(server)
-        .get(`/user/${userFixtures.viewer.username}`)
-        .set('Authorization', `Bearer ${accessToken}`);
+    it(
+      'should get info about the user if ' +
+        'the viewer is the owner of the profile',
+      async () => {
+        const {
+          body: { accessToken },
+        } = await request(server).post('/auth/sign_in').send({
+          username: userFixtures.viewer.username,
+          password: userFixtures.viewer.decryptedPassword,
+        });
+        const { status, body } = await request(server)
+          .get(`/user/${userFixtures.viewer.username}`)
+          .set('Authorization', `Bearer ${accessToken}`);
 
-      expect(status).toBe(200);
-      expect(body.following).toBe(1);
-      expect(body.followers).toBe(2);
-      expect(body.likes).toBe(9);
-    });
+        expect(status).toBe(200);
+        expect(body.following).toBe(1);
+        expect(body.followers).toBe(2);
+        expect(body.likes).toBe(9);
+      },
+    );
 
-    it('should get info about the user if ' +
-      'the viewer is a follower of the profile\'s owner', async () => {
-      const { body: { accessToken } } = await request(server).post('/auth/sign_in').send({
-        username: userFixtures.follower.username,
-        password: userFixtures.follower.decryptedPassword,
-      });
-      const { status, body } = await request(server)
-        .get(`/user/${userFixtures.viewer.username}`)
-        .set('Authorization', `Bearer ${accessToken}`);
+    it(
+      'should get info about the user if ' +
+        "the viewer is a follower of the profile's owner",
+      async () => {
+        const {
+          body: { accessToken },
+        } = await request(server).post('/auth/sign_in').send({
+          username: userFixtures.follower.username,
+          password: userFixtures.follower.decryptedPassword,
+        });
+        const { status, body } = await request(server)
+          .get(`/user/${userFixtures.viewer.username}`)
+          .set('Authorization', `Bearer ${accessToken}`);
 
-      expect(status).toBe(200);
-      expect(body.following).toBe(1);
-      expect(body.followers).toBe(2);
-      expect(body.likes).toBe(3);
-    });
-    
-    it('should get info about the user if ' +
-      'the viewer is a friend of the profile\'s owner', async () => {
-      const { body: { accessToken } } = await request(server).post('/auth/sign_in').send({
-        username: userFixtures.following.username,
-        password: userFixtures.following.decryptedPassword,
-      });
-      const { status, body } = await request(server)
-        .get(`/user/${userFixtures.viewer.username}`)
-        .set('Authorization', `Bearer ${accessToken}`);
+        expect(status).toBe(200);
+        expect(body.following).toBe(1);
+        expect(body.followers).toBe(2);
+        expect(body.likes).toBe(3);
+      },
+    );
 
-      expect(status).toBe(200);
-      expect(body.following).toBe(1);
-      expect(body.followers).toBe(2);
-      expect(body.likes).toBe(4);
-    });
+    it(
+      'should get info about the user if ' +
+        "the viewer is a friend of the profile's owner",
+      async () => {
+        const {
+          body: { accessToken },
+        } = await request(server).post('/auth/sign_in').send({
+          username: userFixtures.following.username,
+          password: userFixtures.following.decryptedPassword,
+        });
+        const { status, body } = await request(server)
+          .get(`/user/${userFixtures.viewer.username}`)
+          .set('Authorization', `Bearer ${accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.following).toBe(1);
+        expect(body.followers).toBe(2);
+        expect(body.likes).toBe(4);
+      },
+    );
   });
 
   afterAll(async () => {
