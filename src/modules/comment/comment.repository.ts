@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../../entities';
 import { Repository } from 'typeorm';
 import { CreateCommentOptions } from './comment.interface';
+import { getConnection } from 'typeorm';
 
 @Injectable()
 export class CommentServiceRepository {
@@ -11,13 +12,37 @@ export class CommentServiceRepository {
     private readonly commentRepository: Repository<Comment>,
   ) {}
 
-  createComment(options: CreateCommentOptions): Promise<Comment> {
+  async createComment({
+    id,
+    content,
+    user,
+    video,
+    parentCommentId
+  }: CreateCommentOptions): Promise<Comment> {
     const comment = new Comment();
 
-    comment.id = options.id;
-    comment.content = options.content;
-    comment.user = options.user;
-    comment.video = options.video;
-    return this.commentRepository.save(comment);
+    comment.id = id;
+    comment.content = content;
+    comment.user = user;
+
+    if (parentCommentId) {
+      comment.parentCommentId = parentCommentId;
+
+      await getConnection().transaction(async transactionalEntityManager => {
+        await transactionalEntityManager.save(comment);
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Comment)
+          .set({
+            likesCount: () => '"likesCount" + 1'
+          })
+          .where('id = :id', { id: parentCommentId })
+          .execute();
+      });
+    } else {
+      comment.video = video;
+      await this.commentRepository.save(comment);
+    }
+    return comment;
   }
 }
