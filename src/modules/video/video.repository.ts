@@ -59,10 +59,24 @@ export class VideoServiceRepository {
     return record instanceof Object;
   }
 
-  async removeLike(user: User, video: Video): Promise<void> {
-    await this.videoLikeRepository.delete({
-      user,
-      video,
+  async removeLike(userId: string, videoId: number): Promise<void> {
+    await getConnection().transaction(async transactionalEntityManager => {
+      
+      await transactionalEntityManager
+        .createQueryBuilder()
+        .delete()
+        .from(VideoLike)
+        .where('userId = :userId', { userId })
+        .andWhere('videoId = :videoId', { videoId })
+        .execute();
+      await transactionalEntityManager
+        .createQueryBuilder()
+        .update(Video)
+        .set({
+          likesCount: () => '"likesCount" - 1'
+        })
+        .where('id = :id', { id: videoId })
+        .execute();
     });
   }
 }

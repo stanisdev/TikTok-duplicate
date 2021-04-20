@@ -44,13 +44,12 @@ export class VideoService {
     await this.repository.createLike(user, video);
   }
 
-  async removeLike(user: User, video: Video): Promise<void> {
-    const exists = await this.repository.doesLikeExist(user.id, video.id);
-    if (!exists) {
+  async removeLike(user: User, videoId: number): Promise<void> {
+    if (!await this.repository.doesLikeExist(user.id, videoId)) {
       throw new BadRequestException(
         await this.i18n.t('video.not_liked_before'),
       );
     }
-    await this.repository.removeLike(user, video);
+    await this.repository.removeLike(user.id, videoId);
   }
 }

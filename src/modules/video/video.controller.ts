@@ -11,8 +11,6 @@ import { AuthGuard } from '../../common/guards/auth.guard';
 import { UploadVideoDto } from './video.dto';
 import { VideoService } from './video.service';
 import { UploadedVideoResponse } from './video.interface';
-import { GetVideo } from '../../common/decorators/getVideo.decorator';
-import { Video } from '../../entities/video.entity';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { VideoAvailabilityGuard } from 'src/common/guards/videoAvailability.guard';
 
@@ -43,13 +41,14 @@ export class VideoController {
   }
 
   @Get(':videoId/remove_like')
+  @UseGuards(VideoAvailabilityGuard)
   @ApiOperation({
     summary: 'Сhange mind and remove "like" at the previously liked video',
   })
   async removeLike(
     @Request() { user },
-    @GetVideo() video: Video,
+    @Param('videoId') videoId: string,
   ): Promise<void> {
-    await this.videoService.removeLike(user, video);
+    await this.videoService.removeLike(user, +videoId);
   }
 }
