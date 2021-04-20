@@ -4,8 +4,8 @@ import { UserServiceRepository } from './user.repository';
 import { I18nRequestScopeService } from 'nestjs-i18n';
 import { ConfigService } from '@nestjs/config';
 import { UserRelationshipType, UserRelationship, User } from '../../entities';
+import { UniversalService } from '../../shared/providers/universal.service';
 import {
-  ProfileViwerType,
   UserInfoResponse,
   UserVideosResponse,
 } from './user.interface';
@@ -67,7 +67,7 @@ export class UserService {
     if (!(user instanceof Object)) {
       throw new BadRequestException(await this.i18n.t('auth.user_not_found'));
     }
-    const viewerType = await this.getViewerType(viewer.id, user.id);
+    const viewerType = await UniversalService.getViewerType(viewer.id, user.id);
     /**
      * Determine amount of likes, followings and
      * followers
@@ -111,7 +111,7 @@ export class UserService {
       limit = limitConfig.max;
     }
     const offset = limit * page;
-    const viewerType = await this.getViewerType(viewer.id, userId);
+    const viewerType = await UniversalService.getViewerType(viewer.id, userId);
     const videos = await this.repository.getUserVideos(
       userId,
       viewerType,
@@ -122,22 +122,5 @@ export class UserService {
       id: +v.id,
       viewsCount: v.viewsCount,
     }));
-  }
-
-  /**
-   * Determine the relationship between a viewer and
-   * the owner of being viewed profile
-   */
-  async getViewerType(
-    viewerId: string,
-    userId: string,
-  ): Promise<ProfileViwerType> {
-    if (viewerId == userId) {
-      return ProfileViwerType.OWNER;
-    } else if (await this.repository.doesFriendshipExist(userId, viewerId)) {
-      return ProfileViwerType.FRIEND;
-    } else {
-      return ProfileViwerType.GUEST;
-    }
   }
 }

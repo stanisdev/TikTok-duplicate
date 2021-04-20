@@ -7,8 +7,7 @@ import {
   Video,
 } from '../../entities';
 import { Repository } from 'typeorm';
-import { Brackets } from 'typeorm';
-import { ProfileViwerType } from './user.interface';
+import { ProfileViwerType } from '../../shared/interfaces/general.interface';
 
 @Injectable()
 export class UserServiceRepository {
@@ -101,34 +100,6 @@ export class UserServiceRepository {
       .andWhere('video.userId = :userId', { userId: user.id })
       .getRawOne();
     return +sum;
-  }
-
-  async doesFriendshipExist(
-    userId: string,
-    viewerId: string,
-  ): Promise<boolean> {
-    const records = await this.userRelationshipRepository
-      .createQueryBuilder('ur')
-      .where(
-        new Brackets((qb) => {
-          qb.where('ur.activeUserId = :u1', { u1: userId })
-            .andWhere('ur.exposedUserId = :u2', { u2: viewerId })
-            .andWhere('ur.type = :type', {
-              type: UserRelationshipType.FOLLOWING,
-            });
-        }),
-      )
-      .orWhere(
-        new Brackets((qb) => {
-          qb.where('ur.exposedUserId = :u3', { u3: userId })
-            .andWhere('ur.activeUserId = :u4', { u4: viewerId })
-            .andWhere('ur.type = :type', {
-              type: UserRelationshipType.FOLLOWING,
-            });
-        }),
-      )
-      .getMany();
-    return records?.length == 2;
   }
 
   async getUserVideos(
