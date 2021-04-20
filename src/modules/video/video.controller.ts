@@ -5,6 +5,7 @@ import {
   UseGuards,
   Request,
   Get,
+  Param,
 } from '@nestjs/common';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { UploadVideoDto } from './video.dto';
@@ -13,6 +14,7 @@ import { UploadedVideoResponse } from './video.interface';
 import { GetVideo } from '../../common/decorators/getVideo.decorator';
 import { Video } from '../../entities/video.entity';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { VideoAvailabilityGuard } from 'src/common/guards/videoAvailability.guard';
 
 @ApiTags('video')
 @ApiBearerAuth()
@@ -31,9 +33,13 @@ export class VideoController {
   }
 
   @Get(':videoId/like')
+  @UseGuards(VideoAvailabilityGuard)
   @ApiOperation({ summary: 'Like video' })
-  async like(@Request() { user }, @GetVideo() video: Video): Promise<void> {
-    await this.videoService.like(user, video);
+  async like(
+    @Request() { user },
+    @Param('videoId') videoId: string,
+  ): Promise<void> {
+    await this.videoService.like(user, +videoId);
   }
 
   @Get(':videoId/remove_like')

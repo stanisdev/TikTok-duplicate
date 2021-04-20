@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VideoLike, Video, VideoAvailableFor, User } from '../../entities';
-import { Repository } from 'typeorm';
+import { Repository, getConnection } from 'typeorm';
 
 @Injectable()
 export class VideoServiceRepository {
@@ -31,20 +31,32 @@ export class VideoServiceRepository {
   }
 
   async createLike(user: User, video: Video): Promise<void> {
-    const like = new VideoLike();
-    like.user = user;
-    like.video = video;
+    await getConnection().transaction(async transactionalEntityManager => {
+      const like = new VideoLike();
+      like.user = user;
+      like.video = video;
 
-    await this.videoLikeRepository.save(like);
+      await transactionalEntityManager.save(like);
+      await transactionalEntityManager
+        .createQueryBuilder()
+        .update(Video)
+        .set({
+          likesCount: () => '"likesCount" + 1'
+        })
+        .where('id = :id', { id: video.id })
+        .execute();
+    });
   }
 
-  findLike(user: User, video: Video): Promise<Video> {
-    return this.videoLikeRepository
+  async doesLikeExist(userId: string, videoId: number): Promise<boolean> {
+    const record = await this.videoLikeRepository
       .createQueryBuilder()
-      .where('"userId" = :userId', { userId: user.id })
+      .where('"userId" = :userId', { userId })
       .select(['"userId"', '"videoId"'])
-      .andWhere('"videoId" = :videoId', { videoId: video.id })
-      .getRawOne<Video>();
+      .andWhere('"videoId" = :videoId', { videoId })
+      .getRawOne();
+    
+    return record instanceof Object;
   }
 
   async removeLike(user: User, video: Video): Promise<void> {

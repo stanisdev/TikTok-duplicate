@@ -35,17 +35,18 @@ export class VideoService {
     };
   }
 
-  async like(user: User, video: Video): Promise<void> {
-    const record = await this.repository.findLike(user, video);
-    if (record instanceof Object) {
+  async like(user: User, videoId: number): Promise<void> {
+    if (await this.repository.doesLikeExist(user.id, videoId)) {
       throw new BadRequestException(await this.i18n.t('video.already_liked'));
     }
+    const video = new Video();
+    video.id = videoId;
     await this.repository.createLike(user, video);
   }
 
   async removeLike(user: User, video: Video): Promise<void> {
-    const record = await this.repository.findLike(user, video);
-    if (!(record instanceof Object)) {
+    const exists = await this.repository.doesLikeExist(user.id, video.id);
+    if (!exists) {
       throw new BadRequestException(
         await this.i18n.t('video.not_liked_before'),
       );

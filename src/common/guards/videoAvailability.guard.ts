@@ -5,7 +5,7 @@ import { I18nRequestScopeService } from 'nestjs-i18n';
 import { UniversalService } from '../../shared/providers/universal.service';
 
 @Injectable()
-export class VideoAvailability implements CanActivate {
+export class VideoAvailabilityGuard implements CanActivate {
   private db: Connection;
 
   constructor(
