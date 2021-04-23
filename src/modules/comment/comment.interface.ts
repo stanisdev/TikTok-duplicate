@@ -6,5 +6,18 @@ export interface CreateCommentOptions {
   user: User;
   video: Video;
   content: string;
-  parentCommentId: number;
+  parentCommentId?: number;
+}
+
+export interface CommentResponse {
+  user: {
+    id: string,
+    username: string,
+  },
+  id: number,
+  content: string,
+  likesCount: number,
+  liked: boolean,
+  repliesCount: number,
+  createdAt: Date,
 }

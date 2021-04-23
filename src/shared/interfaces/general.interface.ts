@@ -8,3 +8,9 @@ export enum ProfileViwerType {
   FRIEND = 1,
   OWNER = 2,
 }
+
+export interface LimitConfig {
+  default: number,
+  max: number,
+}
+

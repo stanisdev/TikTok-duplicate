@@ -9,6 +9,7 @@ import {
   UserInfoResponse,
   UserVideosResponse,
 } from './user.interface';
+import { UtilsService } from 'src/shared/providers/utils.service';
 
 @Injectable()
 export class UserService {
@@ -98,19 +99,7 @@ export class UserService {
       ),
       max: +this.configService.get<string>('pagination.videos.limit.max'),
     };
-    let page = pagination.page;
-    let limit = pagination.limit;
-
-    if (pagination.page < 0) {
-      page = 0;
-    }
-    if (pagination.limit < 1) {
-      limit = limitConfig.default;
-    }
-    if (pagination.limit > limitConfig.max) {
-      limit = limitConfig.max;
-    }
-    const offset = limit * page;
+    const { limit, offset } = UtilsService.buildLimitOffset(limitConfig, pagination);
     const viewerType = await UniversalService.getViewerType(viewer.id, userId);
     const videos = await this.repository.getUserVideos(
       userId,

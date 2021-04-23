@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { customAlphabet, nanoid } from 'nanoid/async';
-import { Pagination } from '../interfaces/general.interface';
+import { LimitConfig, Pagination } from '../interfaces/general.interface';
 
 export class UtilsService {
   private static hashSaltRounds = 10;
@@ -39,5 +39,25 @@ export class UtilsService {
       limit: l,
       page: p,
     };
+  }
+
+  static buildLimitOffset(
+    config: LimitConfig,
+    pagination: Pagination,
+  ): { limit: number, offset: number } {
+    let page = pagination.page;
+    let limit = pagination.limit;
+
+    if (pagination.page < 0) {
+      page = 0;
+    }
+    if (pagination.limit < 1) {
+      limit = config.default;
+    }
+    if (pagination.limit > config.max) {
+      limit = config.max;
+    }
+    const offset = limit * page;
+    return { limit, offset };
   }
 }

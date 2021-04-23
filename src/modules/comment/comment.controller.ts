@@ -1,6 +1,7 @@
-import { Controller, Post, UseGuards, Request, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Body, Get, Query, Param } from '@nestjs/common';
 import { GetVideo } from '../../common/decorators/getVideo.decorator';
 import { AuthGuard } from '../../common/guards/auth.guard';
+import { VideoAvailabilityGuard } from '../../common/guards/videoAvailability.guard';
 import { Video } from '../../entities/video.entity';
 import { AddCommentDto } from './comment.dto';
 import { CommentService } from './comment.service';
@@ -9,11 +10,13 @@ import {
   ApiBearerAuth,
   ApiOperation,
 } from '@nestjs/swagger';
+import { CommentResponse } from './comment.interface';
+import { UtilsService } from 'src/shared/providers/utils.service';
 
 @ApiTags('comment')
 @ApiBearerAuth()
 @Controller('comment')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, VideoAvailabilityGuard)
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
@@ -30,5 +33,23 @@ export class CommentController {
       content: dto.content,
       parentCommentId: dto.parentCommentId,
     });
+  }
+
+  @Get(':videoId')
+  @ApiOperation({ summary: 'Get list of comments of a video' })
+  async getComments(
+    @Param('videoId') videoId: string,
+    @Query('parentCommentId') parentCommentId: string,
+    @Query('limit') limit: string,
+    @Query('page') page: string,
+    @Request() { user },
+  ): Promise<CommentResponse[]> {
+    const pagination = UtilsService.parsePagination(limit, page);
+    return this.commentService.getComments(
+      +videoId,
+      parentCommentId,
+      user,
+      pagination
+    );
   }
 }
