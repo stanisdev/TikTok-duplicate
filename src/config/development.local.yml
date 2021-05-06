@@ -32,3 +32,5 @@ pagination:
     limit:
       default: 50
       max: 100
+  tape:
+    limit: 20

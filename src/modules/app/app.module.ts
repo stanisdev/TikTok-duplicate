@@ -9,6 +9,7 @@ import { I18nModule, I18nJsonParser } from 'nestjs-i18n';
 import configuration from '../../config/configuration';
 import { join } from 'path';
 import { CommentModule } from '../comment/comment.module';
+import { TapeModule } from '../tape/tape.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CommentModule } from '../comment/comment.module';
     UserModule,
     VideoModule,
     CommentModule,
+    TapeModule,
     TypeOrmModule.forRoot(configuration().db),
     ConfigModule.forRoot({
       load: [configuration],

@@ -13,4 +13,3 @@ export interface LimitConfig {
   default: number,
   max: number,
 }
-
