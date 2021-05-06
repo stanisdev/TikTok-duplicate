@@ -35,6 +35,9 @@ export class VideoService {
     };
   }
 
+  /**
+   * Add like to a video
+   */
   async like(user: User, videoId: number): Promise<void> {
     if (await this.repository.doesLikeExist(user.id, videoId)) {
       throw new BadRequestException(await this.i18n.t('video.already_liked'));
@@ -44,6 +47,9 @@ export class VideoService {
     await this.repository.createLike(user, video);
   }
 
+  /**
+   * Remove like from a previously liked video
+   */
   async removeLike(user: User, videoId: number): Promise<void> {
     if (!await this.repository.doesLikeExist(user.id, videoId)) {
       throw new BadRequestException(
