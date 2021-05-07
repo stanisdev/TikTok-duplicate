@@ -38,13 +38,22 @@ export class VideoService {
   /**
    * Add like to a video
    */
-  async like(user: User, videoId: number): Promise<void> {
+  async like(
+    user: User,
+    videoId: number,
+    videoOwnerId: string,
+  ): Promise<void> {
     if (await this.repository.doesLikeExist(user.id, videoId)) {
       throw new BadRequestException(await this.i18n.t('video.already_liked'));
     }
     const video = new Video();
     video.id = videoId;
-    await this.repository.createLike(user, video);
+    const like = await this.repository.createLike(user, video);
+    const id = +(await UtilsService.generateRandomString({
+      length: 15,
+      onlyDigits: true,
+    }));
+    await this.repository.createNotification(id, videoOwnerId, like);
   }
 
   /**

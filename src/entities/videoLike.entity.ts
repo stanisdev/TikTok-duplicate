@@ -5,11 +5,11 @@ import { Video } from './video.entity';
 @Entity('video_likes')
 export class VideoLike {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
-  @ManyToOne(() => User, (user) => user.videoLikes, { primary: true })
+  @ManyToOne(() => User, (user) => user.videoLikes)
   user: User;
 
-  @ManyToOne(() => Video, (video) => video.likes, { primary: true })
+  @ManyToOne(() => Video, (video) => video.likes)
   video: Video;
 }

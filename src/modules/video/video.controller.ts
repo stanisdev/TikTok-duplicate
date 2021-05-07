@@ -6,6 +6,7 @@ import {
   Request,
   Get,
   Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { UploadVideoDto } from './video.dto';
@@ -34,10 +35,10 @@ export class VideoController {
   @UseGuards(VideoAvailabilityGuard)
   @ApiOperation({ summary: 'Like video' })
   async like(
-    @Request() { user },
-    @Param('videoId') videoId: string,
+    @Request() { user, video },
+    @Param('videoId', ParseIntPipe) videoId: number,
   ): Promise<void> {
-    await this.videoService.like(user, +videoId);
+    await this.videoService.like(user, videoId, video.userId);
   }
 
   @Get(':videoId/remove_like')

@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { VideoLike, Video, VideoAvailableFor, User } from '../../entities';
+import {
+  VideoLike,
+  Video,
+  VideoAvailableFor,
+  User,
+  Notification,
+  NotificationType,
+} from '../../entities';
 import { Repository, getConnection } from 'typeorm';
 
 @Injectable()
@@ -11,6 +18,9 @@ export class VideoServiceRepository {
 
     @InjectRepository(VideoLike)
     public readonly videoLikeRepository: Repository<VideoLike>,
+
+    @InjectRepository(Notification)
+    private readonly notificationRepository: Repository<Notification>
   ) {}
 
   createVideo(
@@ -30,13 +40,12 @@ export class VideoServiceRepository {
     return this.videoRepository.save(video);
   }
 
-  async createLike(user: User, video: Video): Promise<void> {
-    await getConnection().transaction(async transactionalEntityManager => {
+  createLike(user: User, video: Video): Promise<VideoLike> {
+    return getConnection().transaction(async transactionalEntityManager => {
       const like = new VideoLike();
       like.user = user;
       like.video = video;
 
-      await transactionalEntityManager.save(like);
       await transactionalEntityManager
         .createQueryBuilder()
         .update(Video)
@@ -45,6 +54,7 @@ export class VideoServiceRepository {
         })
         .where('id = :id', { id: video.id })
         .execute();
+      return transactionalEntityManager.save(like);
     });
   }
 
@@ -78,5 +88,19 @@ export class VideoServiceRepository {
         .where('id = :id', { id: videoId })
         .execute();
     });
+  }
+
+  async createNotification(
+    id: number,
+    receiverId: string,
+    videoLike: VideoLike,
+  ) {
+    const notification = new Notification();
+    notification.receiverId = receiverId;
+    notification.videoLike = videoLike;
+    notification.id = id;
+    notification.type = NotificationType.VIDEO_LIKE;
+
+    return this.notificationRepository.save(notification);
   }
 }

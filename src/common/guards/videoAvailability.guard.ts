@@ -15,15 +15,15 @@ export class VideoAvailabilityGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const { params, user } = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
     /**
      * Determine the existence of a video
      */
     const video = await this.db
       .getRepository(Video)
       .createQueryBuilder('v')
-      .select(['v.userId', 'v.availableFor AS "availability"'])
-      .where('v.id = :id', { id: params.videoId })
+      .select(['v.id AS id', 'v.userId', 'v.availableFor AS "availability"'])
+      .where('v.id = :id', { id: request.params.videoId })
       .getRawOne();
     if (!(video instanceof Object)) {
       throw new BadRequestException(
@@ -34,7 +34,8 @@ export class VideoAvailabilityGuard implements CanActivate {
      * Get the type of the viewer and compare it
      * with the availability of a video
      */
-    const viewerType = await UniversalService.getViewerType(user.id, video.userId);
+    const viewerType = await UniversalService.getViewerType(request.user.id, video.userId);
+    request.video = video;
     return viewerType >= video.availability;
   }
 }

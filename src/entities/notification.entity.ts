@@ -1,4 +1,4 @@
-import { IsInt } from 'class-validator';
+import { IsInt, IsUUID } from 'class-validator';
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { VideoLike } from './videoLike.entity';
 import { User } from './user.entity';
@@ -23,6 +23,10 @@ export class Notification {
 
   @ManyToOne(() => User, (user) => user.notifications)
   receiver: User;
+
+  @Column()
+  @IsUUID(4)
+  receiverId: string;
 
   @OneToOne(() => VideoLike)
   @JoinColumn()
