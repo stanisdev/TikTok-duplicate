@@ -8,3 +8,4 @@ export {
 } from './userRelationship.entity';
 export { Video, VideoAvailableFor } from './video.entity';
 export { VideoLike } from './videoLike.entity';
+// export { Notification } from './notification.entity';
